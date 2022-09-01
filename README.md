@@ -1,4 +1,4 @@
-# API tool kit for Prisma Cloud and its modules
+# Python3 toolkit for Prisma Cloud APIs
 
 # Beta release 09/01/2022
 Self Hosted CWP is not yet supported, coming soon.
