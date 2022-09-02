@@ -1,6 +1,5 @@
 #Standard Library
 import time
-import logging
 
 #installed
 import requests
