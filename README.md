@@ -26,6 +26,8 @@ No documentation yet but coming soon. Please refer to "examples.py" in the meant
 
 # Installation
 
+```pip3 install -r requirements.txt```
+
 # Setup
 
 # Use
