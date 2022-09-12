@@ -4,7 +4,7 @@
 #Minimum setup-----------------------------------------------------------------
 # import pc_session
 
-# session_manager = pc_session.load_from_file(saas=True)
+# session_manager = pc_session.load_from_file()
 # cspm_session = session_manager.create_cspm_session()
 
 # res = cspm_session.request('GET', '/cloud')
@@ -14,7 +14,7 @@
 # import pc_session
 # import loguru
 
-# session_manager = pc_session.load_from_file(saas=True,logger=loguru.logger)
+# session_manager = pc_session.load_from_file(logger=loguru.logger)
 # cspm_session = session_manager.create_cspm_session()
 
 # res = cspm_session.request('GET', '/cloud')
@@ -24,7 +24,7 @@
 # import pc_session
 # import loguru
 
-# session_manager = pc_session.load_from_file(saas=True,logger=loguru.logger)
+# session_manager = pc_session.load_from_file(logger=loguru.logger)
 
 # cspm_session = session_manager.create_cspm_session()
 # cwp_session = session_manager.create_cwp_session()
@@ -41,7 +41,7 @@
 # import pc_session
 # import loguru
 
-# session_man = pc_session.load_from_file(saas=True, logger=loguru.logger)
+# session_man = pc_session.load_from_file(logger=loguru.logger)
 
 # cwp_session = session_man.create_cwp_session()
 # cwp_session.cspm_token = 'asdasdasd'
@@ -54,7 +54,7 @@
 # import pc_session
 # import loguru
 
-# session_man = pc_session.load_from_file(saas=True, logger=loguru.logger)
+# session_man = pc_session.load_from_file(logger=loguru.logger)
 
 # cwp_session = session_man.create_cwp_session()
 # cwp_session.cspm_token = 'asdasdasd'

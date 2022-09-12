@@ -13,6 +13,7 @@ logger.setLevel(10)
 
 #Local
 from saas_session_manager import SaaSSessionManager
+from onprem_session_manager import CWPSessionManager
 
 def __c_print(*args, **kwargs):
     '''
@@ -56,6 +57,46 @@ def __c_print(*args, **kwargs):
     print(f'{c_end}', end=_end)
 
 #==============================================================================
+
+def __validate_cwp_credentials(name, _url, version,uname, passwd) -> bool:
+    '''
+    This function creates a session with the supplied credentials to test 
+    if the user successfully entered valid credentails.
+    '''
+
+    headers = {
+    'content-type': 'application/json; charset=UTF-8'
+    }
+
+    payload = {
+        "username": uname,
+        "password": passwd,
+    }
+
+    url = f'{_url}/api/{version}/authenticate'
+
+    try:
+        __c_print('API - Validating credentials')
+        res = requests.request("POST", url, headers=headers, json=payload)
+        print('HI')
+        print(res.status_code)
+
+        if res.status_code == 200:
+            __c_print('SUCCESS', color='green')
+            print()
+            return True
+        else:
+            return False
+    except:
+        __c_print('ERROR', end=' ', color='red')
+        print('Could not connect to Prisma Cloud API.')
+        print()
+        print('Steps to troubleshoot:')
+        __c_print('1) Please disconnect from any incompatible VPN', color='blue')
+        print()
+        __c_print('2) Please ensure you have entered a valid Prisma Cloud URL.', color='blue')
+        print()
+        return False
 
 def __validate_credentials(a_key, s_key, url) -> bool:
     '''
@@ -111,6 +152,30 @@ def __validate_url(url):
 
 #==============================================================================
 
+def __get_cwp_tenant_credentials():
+
+    __c_print('Enter tenant name or any preferred identifier (optional):', color='blue')
+    name = input()
+
+    __c_print('Enter console base url:', color='blue')
+    url = input()
+    print()
+
+    __c_print('Enter console version:', color='blue')
+    version = input()
+    print()
+
+    __c_print('Enter console username:', color='blue')
+    uname = input()
+    print()
+
+    __c_print('Enter console passwd:', color='blue')
+    passwd = input()
+    print()
+    
+
+    return name, url, version, uname, passwd
+
 def __get_tenant_credentials():
 
     __c_print('Enter tenant name or any preferred identifier:', color='blue')
@@ -138,6 +203,17 @@ def __get_tenant_credentials():
 
 #==============================================================================
 
+def __build_cwp_session_dict(name, url, version, uname, passwd):
+    session_dict = {
+        name: {
+            'url': url,
+            'version': version,
+            'uname': uname,
+            'passwd': passwd
+            }
+    }
+    return session_dict
+
 def __build_session_dict(name, a_key, s_key, url):
     session_dict = {
         name: {
@@ -149,6 +225,52 @@ def __build_session_dict(name, a_key, s_key, url):
     return session_dict
 
 #==============================================================================
+
+def __get_cwp_credentials_from_user(num_tenants):
+    #Gets the source tenant credentials and ensures that are valid
+    credentials = []
+
+    if num_tenants != -1:
+        for i in range(num_tenants):
+            valid = False
+            while not valid:
+                __c_print('Enter credentials for the console', color='blue')
+                print()
+                name, url, version, uname, passwd = __get_cwp_tenant_credentials()
+                
+                valid = __validate_cwp_credentials(name, url, version, uname, passwd)
+                if valid == False:
+                    __c_print('FAILED', end=' ', color='red')
+                    print('Invalid credentails. Please re-enter your credentials')
+                    print()
+                else:
+                    credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
+
+        return credentials
+    else:
+        while True:
+            valid = False
+            while not valid:
+                __c_print('Enter credentials for the console', color='blue')
+                print()
+                name, url, version, uname, passwd = __get_cwp_tenant_credentials()
+                
+                valid = __validate_cwp_credentials(name, url, version, uname, passwd)
+                if valid == False:
+                    __c_print('FAILED', end=' ', color='red')
+                    print('Invalid credentails. Please re-enter your credentials')
+                    print()
+                else:
+                    credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
+            
+            __c_print('Would you like to add an other tenant? Y/N')
+            choice = input().lower()
+
+            if choice != 'yes' and choice != 'y':
+                break
+
+        return credentials
+
 
 def __get_credentials_from_user(num_tenants):
     #Gets the source tenant credentials and ensures that are valid
@@ -219,6 +341,46 @@ def __load_uuid_yaml(file_name, logger=logging):
 
     return tenant_sessions, entity_type, uuid, cmp_type
 
+
+#==============================================================================
+
+
+def cwp_load_from_file(file_path='console_credentials.yml', logger=logger, num_tenants=-1) -> list:
+    '''
+    Reads console_credentials.yml or specified file path to load
+    self hosted CWP console credentials to create a session.
+    Returns a CWP session object.
+    '''
+    #Open and load config file
+    if not os.path.exists(file_path):
+        #Create credentials yml file
+        __c_print('No credentials file found. Generating...', color='yellow')
+        print()
+        tenants = __get_cwp_credentials_from_user(num_tenants)
+        with open(file_path, 'w') as yml_file: 
+            for tenant in tenants:
+                yaml.dump(tenant, yml_file, default_flow_style=False)
+
+    cfg = {}
+    with open(file_path, "r") as file:
+        cfg = yaml.load(file, Loader=yaml.BaseLoader)
+
+    #Parse cfg for tenant names and create tokens for each tenant
+    tenant_sessions = []
+    for tenant in cfg:
+        uname = cfg[tenant]['uname']
+        passwd = cfg[tenant]['passwd']
+        api_url = cfg[tenant]['api_url']
+        version = cfg[tenant]['version']
+
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, version, uname=uname, passwd=passwd, logger=logger))
+
+    try:   
+        return tenant_sessions[0]
+    except:
+        logger.error('Error - No credentials found. Exiting...')
+        exit()
+
 def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=logger, num_tenants=-1) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
@@ -251,7 +413,7 @@ def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=l
 
     return tenant_sessions
 
-def load_from_file(saas:bool, file_path='tenant_credentials.yml', logger=logger, num_tenants=-1) -> list:
+def load_from_file(file_path='tenant_credentials.yml', logger=logger, num_tenants=-1) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
     Returns:
@@ -263,7 +425,7 @@ def load_from_file(saas:bool, file_path='tenant_credentials.yml', logger=logger,
         __c_print('No credentials file found. Generating...', color='yellow')
         print()
         tenants = __get_credentials_from_user(num_tenants)
-        with open(file_path, 'w') as yml_file:
+        with open(file_path, 'w') as yml_file: 
             for tenant in tenants:
                 yaml.dump(tenant, yml_file, default_flow_style=False)
 
@@ -277,15 +439,15 @@ def load_from_file(saas:bool, file_path='tenant_credentials.yml', logger=logger,
         s_key = cfg[tenant]['secret_key']
         api_url = cfg[tenant]['api_url']
 
-        if saas == True:
-            tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, logger))
+        tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, logger))
+
     try:   
         return tenant_sessions[0]
     except:
         logger.error('Error - No credentials found. Exiting...')
         exit()
 
-def load_from_env(saas:bool, logger=logger) -> object:
+def load_from_env(logger=logger) -> object:
     error_exit = False
 
     name = 'Tenant'
@@ -321,18 +483,17 @@ def load_from_env(saas:bool, logger=logger) -> object:
         logger.info('Missing required environemnt variables. Exiting...')
         exit()
 
-    if saas == True:
-        return SaaSSessionManager(name, a_key, s_key, api_url, logger)
+    return SaaSSessionManager(name, a_key, s_key, api_url, logger)
 
 
-def load_from_user(saas: bool, logger=logger, num_tenants=-1) -> list:
+def load_from_user(logger=logger, num_tenants=-1) -> list:
     tenant_sessions = []
     tenants = __get_credentials_from_user(num_tenants)
     for tenant in tenants:
         for key in tenant:
             name = key
-            if saas == True:
-                tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], logger))
+
+            tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], logger))
             
 
     return tenant_sessions

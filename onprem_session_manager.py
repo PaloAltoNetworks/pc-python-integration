@@ -8,7 +8,7 @@ import requests
 #Local
 from _session_types import CWPSession
 
-class SaaSSessionManager:
+class CWPSessionManager:
     def __init__(self, tenant_name: str, api_url: str, version: str, logger: object, uname='', passwd='', api_token=''):
         """
         Initalizes a Prisma Cloud API Session Manager.

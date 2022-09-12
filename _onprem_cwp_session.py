@@ -7,14 +7,9 @@ import requests
 #Local
 from _session import Session
 
-#Define enum type--------------------------------------------------------------
-class SType(enum.Enum):
-    basic = 1
-    token = 2
-
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
-    def __init__(self, tenant_name: str, api_url: str, version: str, logger: object, uname='', passwd='', api_token=''):
+    def __init__(self, tenant_name: str, api_url: str, version: str, uname: str, passwd:str, logger: object):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -31,7 +26,6 @@ class CWPSession(Session):
         self.tenant = tenant_name
         self.uname = uname
         self.passwd = passwd
-        self.api_token = api_token
         self.version = version
         self.api_url = api_url
 
@@ -39,17 +33,6 @@ class CWPSession(Session):
 
         self.auth_key = 'Authorization'
         self.auth_style = 'Bearer '
-        
-        session_type = SType
-        if uname != '' and passwd != '' and api_token == '':
-            session_type = SType.basic
-        elif api_token != '' and uname == '' and passwd == '':
-            session_type = SType.token
-        else:
-            logger.error('Invalid credential configuration. Exiting...')
-            exit()
-
-        self.session_type = session_type
 
         self.headers = {
             'content-type': 'application/json; charset=UTF-8',
@@ -74,20 +57,10 @@ class CWPSession(Session):
             'content-type': 'application/json; charset=UTF-8'
             }
 
-        payload = {}
-
-        if self.session_type == SType.token:
-            payload = {
-                "username": None,
-                "password": None,
-                "token": self.token
-            }
-        else:
-            payload = {
-                "username": self.uname,
-                "password": self.passwd,
-                "token": None
-            }
+        payload = {
+            "username": self.uname,
+            "password": self.passwd,
+        }
 
         self.logger.debug('API - Generating CWPP session token.')
 
@@ -103,5 +76,6 @@ class CWPSession(Session):
         return res
 
     def _expired_login(self) -> None:
-        self.logger.warning('CSPM session expired. Generating new session.')
-        self.__cspm_login()
+        self.logger.error('FAILED')
+        self.logger.warning('Invalid Login Credentials. JWT not generated. Exiting...')
+        exit()
