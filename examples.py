@@ -2,29 +2,29 @@
 
 
 #Minimum setup-----------------------------------------------------------------
-# import pc_session
+# import session
 
-# session_manager = pc_session.load_from_file()
+# session_manager = session.load_from_file()
 # cspm_session = session_manager.create_cspm_session()
 
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
-#Reccomended setup-------------------------------------------------------------
-# import pc_session
+#Recommended setup-------------------------------------------------------------
+# import session
 # import loguru
 
-# session_manager = pc_session.load_from_file(logger=loguru.logger)
+# session_manager = session.load_from_file(logger=loguru.logger)
 # cspm_session = session_manager.create_cspm_session()
 
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
 #CSPM and CWP------------------------------------------------------------------
-# import pc_session
+# import session
 # import loguru
 
-# session_manager = pc_session.load_from_file(logger=loguru.logger)
+# session_manager = session.load_from_file(logger=loguru.logger)
 
 # cspm_session = session_manager.create_cspm_session()
 # cwp_session = session_manager.create_cwp_session()
@@ -38,10 +38,10 @@
 # print(res2.json())
 
 #Session self healing----------------------------------------------------------
-# import pc_session
+# import session
 # import loguru
 
-# session_man = pc_session.load_from_file(logger=loguru.logger)
+# session_man = session.load_from_file(logger=loguru.logger)
 
 # cwp_session = session_man.create_cwp_session()
 # cwp_session.cspm_token = 'asdasdasd'
@@ -51,10 +51,10 @@
 # print(res.json())
 
 # #Error and debugging output----------------------------------------------------------
-# import pc_session
+# import session
 # import loguru
 
-# session_man = pc_session.load_from_file(logger=loguru.logger)
+# session_man = session.load_from_file(logger=loguru.logger)
 
 # cwp_session = session_man.create_cwp_session()
 # cwp_session.cspm_token = 'asdasdasd'

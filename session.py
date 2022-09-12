@@ -241,7 +241,7 @@ def __get_cwp_credentials_from_user(num_tenants):
                 valid = __validate_cwp_credentials(name, url, version, uname, passwd)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
-                    print('Invalid credentails. Please re-enter your credentials')
+                    print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
                     credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
@@ -258,7 +258,7 @@ def __get_cwp_credentials_from_user(num_tenants):
                 valid = __validate_cwp_credentials(name, url, version, uname, passwd)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
-                    print('Invalid credentails. Please re-enter your credentials')
+                    print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
                     credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
@@ -287,7 +287,7 @@ def __get_credentials_from_user(num_tenants):
                 valid = __validate_credentials(src_a_key, src_s_key, src_url)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
-                    print('Invalid credentails. Please re-enter your credentials')
+                    print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
                     credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url))
@@ -304,7 +304,7 @@ def __get_credentials_from_user(num_tenants):
                 valid = __validate_credentials(src_a_key, src_s_key, src_url)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
-                    print('Invalid credentails. Please re-enter your credentials')
+                    print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
                     credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url))
@@ -343,9 +343,7 @@ def __load_uuid_yaml(file_name, logger=logging):
 
 
 #==============================================================================
-
-
-def cwp_load_from_file(file_path='console_credentials.yml', logger=logger, num_tenants=-1) -> list:
+def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=logger, num_tenants=-1) -> list:
     '''
     Reads console_credentials.yml or specified file path to load
     self hosted CWP console credentials to create a session.
@@ -357,6 +355,39 @@ def cwp_load_from_file(file_path='console_credentials.yml', logger=logger, num_t
         __c_print('No credentials file found. Generating...', color='yellow')
         print()
         tenants = __get_cwp_credentials_from_user(num_tenants)
+        with open(file_path, 'w') as yml_file: 
+            for tenant in tenants:
+                yaml.dump(tenant, yml_file, default_flow_style=False)
+
+    cfg = {}
+    with open(file_path, "r") as file:
+        cfg = yaml.load(file, Loader=yaml.BaseLoader)
+
+    #Parse cfg for tenant names and create tokens for each tenant
+    tenant_sessions = []
+    for tenant in cfg:
+        uname = cfg[tenant]['uname']
+        passwd = cfg[tenant]['passwd']
+        api_url = cfg[tenant]['api_url']
+        version = cfg[tenant]['version']
+
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, version, uname=uname, passwd=passwd, logger=logger))
+
+
+    return tenant_sessions
+
+def onprem_load_from_file(file_path='console_credentials.yml', logger=logger) -> list:
+    '''
+    Reads console_credentials.yml or specified file path to load
+    self hosted CWP console credentials to create a session.
+    Returns a CWP session object.
+    '''
+    #Open and load config file
+    if not os.path.exists(file_path):
+        #Create credentials yml file
+        __c_print('No credentials file found. Generating...', color='yellow')
+        print()
+        tenants = __get_cwp_credentials_from_user(1)
         with open(file_path, 'w') as yml_file: 
             for tenant in tenants:
                 yaml.dump(tenant, yml_file, default_flow_style=False)
@@ -413,7 +444,7 @@ def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=l
 
     return tenant_sessions
 
-def load_from_file(file_path='tenant_credentials.yml', logger=logger, num_tenants=-1) -> list:
+def load_from_file(file_path='tenant_credentials.yml', logger=logger) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
     Returns:
@@ -424,7 +455,7 @@ def load_from_file(file_path='tenant_credentials.yml', logger=logger, num_tenant
         #Create credentials yml file
         __c_print('No credentials file found. Generating...', color='yellow')
         print()
-        tenants = __get_credentials_from_user(num_tenants)
+        tenants = __get_credentials_from_user(1)
         with open(file_path, 'w') as yml_file: 
             for tenant in tenants:
                 yaml.dump(tenant, yml_file, default_flow_style=False)

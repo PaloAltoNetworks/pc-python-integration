@@ -2,7 +2,7 @@
 import requests
 
 #Local
-from _session import Session
+from _session_base import Session
 from _cspm_session import CSPMSession
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
