@@ -9,7 +9,7 @@ from _session_base import Session
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
-    def __init__(self, tenant_name: str, api_url: str, version: str, uname: str, passwd:str, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, logger: object):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -26,7 +26,7 @@ class CWPSession(Session):
         self.tenant = tenant_name
         self.uname = uname
         self.passwd = passwd
-        self.version = version
+
         self.api_url = api_url
 
         self.logger = logger
@@ -51,7 +51,7 @@ class CWPSession(Session):
         '''
 
         #Build request
-        url = f'{self.api_url}/api/{self.version}/authenticate'
+        url = f'{self.api_url}/api/v1/authenticate'
         
         headers = {
             'content-type': 'application/json; charset=UTF-8'
@@ -62,7 +62,7 @@ class CWPSession(Session):
             "password": self.passwd,
         }
 
-        self.logger.debug('API - Generating CWPP session token.')
+        self.logger.debug('API - Generating CWP session token.')
 
         res = object()
         try:

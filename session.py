@@ -58,10 +58,10 @@ def __c_print(*args, **kwargs):
 
 #==============================================================================
 
-def __validate_cwp_credentials(name, _url, version,uname, passwd) -> bool:
+def __validate_cwp_credentials(name, _url, uname, passwd) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
-    if the user successfully entered valid credentails.
+    if the user successfully entered valid credentials.
     '''
 
     headers = {
@@ -73,12 +73,11 @@ def __validate_cwp_credentials(name, _url, version,uname, passwd) -> bool:
         "password": passwd,
     }
 
-    url = f'{_url}/api/{version}/authenticate'
+    url = f'{_url}/api/v1/authenticate'
 
     try:
         __c_print('API - Validating credentials')
         res = requests.request("POST", url, headers=headers, json=payload)
-        print('HI')
         print(res.status_code)
 
         if res.status_code == 200:
@@ -96,6 +95,7 @@ def __validate_cwp_credentials(name, _url, version,uname, passwd) -> bool:
         print()
         __c_print('2) Please ensure you have entered a valid Prisma Cloud URL.', color='blue')
         print()
+        quit()
         return False
 
 def __validate_credentials(a_key, s_key, url) -> bool:
@@ -157,24 +157,20 @@ def __get_cwp_tenant_credentials():
     __c_print('Enter tenant name or any preferred identifier (optional):', color='blue')
     name = input()
 
-    __c_print('Enter console base url:', color='blue')
+    __c_print('Enter console base url with port number:', color='blue')
     url = input()
-    print()
-
-    __c_print('Enter console version:', color='blue')
-    version = input()
     print()
 
     __c_print('Enter console username:', color='blue')
     uname = input()
     print()
 
-    __c_print('Enter console passwd:', color='blue')
+    __c_print('Enter console password:', color='blue')
     passwd = input()
     print()
     
 
-    return name, url, version, uname, passwd
+    return name, url, uname, passwd
 
 def __get_tenant_credentials():
 
@@ -203,11 +199,10 @@ def __get_tenant_credentials():
 
 #==============================================================================
 
-def __build_cwp_session_dict(name, url, version, uname, passwd):
+def __build_cwp_session_dict(name, url, uname, passwd):
     session_dict = {
         name: {
             'url': url,
-            'version': version,
             'uname': uname,
             'passwd': passwd
             }
@@ -236,15 +231,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, version, uname, passwd = __get_cwp_tenant_credentials()
+                name, url, uname, passwd = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, version, uname, passwd)
+                valid = __validate_cwp_credentials(name, url, uname, passwd)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd))
 
         return credentials
     else:
@@ -253,15 +248,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, version, uname, passwd = __get_cwp_tenant_credentials()
+                name, url, uname, passwd = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, version, uname, passwd)
+                valid = __validate_cwp_credentials(name, url, uname, passwd)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, version, uname, passwd))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -369,9 +364,8 @@ def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=logg
         uname = cfg[tenant]['uname']
         passwd = cfg[tenant]['passwd']
         api_url = cfg[tenant]['api_url']
-        version = cfg[tenant]['version']
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, version, uname=uname, passwd=passwd, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, logger=logger))
 
 
     return tenant_sessions
@@ -401,10 +395,9 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=logger) ->
     for tenant in cfg:
         uname = cfg[tenant]['uname']
         passwd = cfg[tenant]['passwd']
-        api_url = cfg[tenant]['api_url']
-        version = cfg[tenant]['version']
+        api_url = cfg[tenant]['url']
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, version, uname=uname, passwd=passwd, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, logger=logger))
 
     try:   
         return tenant_sessions[0]
