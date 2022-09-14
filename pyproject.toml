@@ -11,6 +11,10 @@ description = "Python Package for making API calls to the Prisma Cloud API using
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.7"
+dependencies = [
+  "PyYAML ~= 5.0",
+  'requests < 3',
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: ISC License (ISCL)",
