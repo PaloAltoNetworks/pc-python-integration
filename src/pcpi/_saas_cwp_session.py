@@ -2,8 +2,8 @@
 import requests
 
 #Local
-from _session_base import Session
-from _cspm_session import CSPMSession
+from ._session_base import Session
+from ._cspm_session import CSPMSession
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class SaaSCWPSession(Session):

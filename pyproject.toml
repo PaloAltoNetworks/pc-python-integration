@@ -1,0 +1,23 @@
+requires = ["hatchling","PyYAML", "requests", "urllib3"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pcpi"
+version = "0.0.1"
+authors = [
+  { name="Adam Hamilton-Sutherland", email="ahamiltonsut@paloaltonetworks.com" },
+]
+description = "Python Package for making API calls to the Prisma Cloud API using best practices."
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: ISC License (ISCL)",
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta"
+]
+
+[project.urls]
+"Homepage" = "https://github.com/PaloAltoNetworks/pc-python-integration"
+"Bug Tracker" = "https://github.com/PaloAltoNetworks/pc-python-integration/issues"

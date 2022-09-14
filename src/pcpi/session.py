@@ -8,12 +8,12 @@ import requests
 import logging
 
 #Default Logger
-logger = logging.getLogger()
-logger.setLevel(10)
+py_logger = logging.getLogger()
+py_logger.setLevel(10)
 
 #Local
-from saas_session_manager import SaaSSessionManager
-from onprem_session_manager import CWPSessionManager
+from .saas_session_manager import SaaSSessionManager
+from .onprem_session_manager import CWPSessionManager
 
 def __c_print(*args, **kwargs):
     '''
@@ -101,7 +101,7 @@ def __validate_cwp_credentials(name, _url, uname, passwd) -> bool:
 def __validate_credentials(a_key, s_key, url) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
-    if the user successfully entered valid credentails.
+    if the user successfully entered valid credentials.
     '''
 
     headers = {
@@ -312,7 +312,7 @@ def __get_credentials_from_user(num_tenants):
 
         return credentials
 
-def __load_uuid_yaml(file_name, logger=logging):
+def __load_uuid_yaml(file_name, logger=py_logger):
     with open(file_name, "r") as file:
         cfg = yaml.load(file, Loader=yaml.BaseLoader)
 
@@ -338,7 +338,7 @@ def __load_uuid_yaml(file_name, logger=logging):
 
 
 #==============================================================================
-def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=logger, num_tenants=-1) -> list:
+def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
     '''
     Reads console_credentials.yml or specified file path to load
     self hosted CWP console credentials to create a session.
@@ -370,7 +370,7 @@ def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=logg
 
     return tenant_sessions
 
-def onprem_load_from_file(file_path='console_credentials.yml', logger=logger) -> list:
+def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger) -> list:
     '''
     Reads console_credentials.yml or specified file path to load
     self hosted CWP console credentials to create a session.
@@ -405,7 +405,7 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=logger) ->
         logger.error('Error - No credentials found. Exiting...')
         exit()
 
-def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=logger, num_tenants=-1) -> list:
+def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
     Returns:
@@ -437,7 +437,7 @@ def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=l
 
     return tenant_sessions
 
-def load_from_file(file_path='tenant_credentials.yml', logger=logger) -> list:
+def load_from_file(file_path='tenant_credentials.yml', logger=py_logger) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
     Returns:
@@ -471,7 +471,7 @@ def load_from_file(file_path='tenant_credentials.yml', logger=logger) -> list:
         logger.error('Error - No credentials found. Exiting...')
         exit()
 
-def load_from_env(logger=logger) -> object:
+def load_from_env(logger=py_logger) -> object:
     error_exit = False
 
     name = 'Tenant'
@@ -493,7 +493,7 @@ def load_from_env(logger=logger) -> object:
     try:
         a_key = os.environ['PC_TENANT_A_KEY']
     except:
-        logger.error('Missing \'PC_TENANT_A_KEY\' environment varaible.')
+        logger.error('Missing \'PC_TENANT_A_KEY\' environment variable.')
         error_exit = True
 
     s_key = None
@@ -504,13 +504,13 @@ def load_from_env(logger=logger) -> object:
         error_exit = True
 
     if error_exit:
-        logger.info('Missing required environemnt variables. Exiting...')
+        logger.info('Missing required environment variables. Exiting...')
         exit()
 
     return SaaSSessionManager(name, a_key, s_key, api_url, logger)
 
 
-def load_from_user(logger=logger, num_tenants=-1) -> list:
+def load_from_user(logger=py_logger, num_tenants=-1) -> list:
     tenant_sessions = []
     tenants = __get_credentials_from_user(num_tenants)
     for tenant in tenants:

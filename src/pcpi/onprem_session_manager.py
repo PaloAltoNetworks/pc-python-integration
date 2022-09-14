@@ -6,7 +6,7 @@ import logging
 import requests
 
 #Local
-from _session_types import CWPSession
+from ._session_types import CWPSession
 
 class CWPSessionManager:
     def __init__(self, tenant_name: str, api_url: str, logger: object, uname='', passwd='', api_token=''):

@@ -2,6 +2,15 @@
 
 # Announcements
 
+## Beta release 9/14/2022
+**Patch Notes**
+- Renamed repo to match package name
+- Reorganized repository to be compatible with PyPI package structure
+- Examples file changed to support new file structure
+
+**Known bugs:**
+- Default logging library is missing output. Using loguru solves this in the meantime.
+
 ## Beta release 09/12/2022
 **Patch notes**
 - Modules and function name changes

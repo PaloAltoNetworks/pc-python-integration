@@ -6,7 +6,7 @@ import logging
 import requests
 
 #Local
-from _session_types import CSPMSession, SaaSCWPSession
+from ._session_types import CSPMSession, SaaSCWPSession
 
 class SaaSSessionManager:
     def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, logger):
