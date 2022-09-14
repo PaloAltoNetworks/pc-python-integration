@@ -1,4 +1,6 @@
-# Python3 toolkit for Prisma Cloud APIs
+# Prisma Cloud Python Integration - PCPI
+
+## Python3 toolkit for Prisma Cloud APIs
 
 # Announcements
 
@@ -7,6 +9,7 @@
 - Renamed repo to match package name
 - Reorganized repository to be compatible with PyPI package structure
 - Examples file changed to support new file structure
+- Package published to PyPi for easy use and updates
 
 **Known bugs:**
 - Default logging library is missing output. Using loguru solves this in the meantime.
@@ -35,7 +38,7 @@ No documentation yet but coming soon. Please refer to "examples.py" in the meant
 
 # Installation
 
-```pip3 install -r requirements.txt```
+```pip3 install pcpi```
 
 # Setup
 
