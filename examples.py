@@ -2,7 +2,7 @@
 
 ###INSTALLED FROM PYPI EXAMPLES
 #Minimum setup-----------------------------------------------------------------
-# from pcpi import session
+# from pcpi import session_loader
 
 # session_manager = session.load_from_file()
 # cspm_session = session_manager.create_cspm_session()
@@ -11,7 +11,7 @@
 # print(res.json())
 
 #Recommended setup-------------------------------------------------------------
-# from pcpi import session
+# from pcpi import session_loader
 # import loguru
 
 # session_manager = session.load_from_file(logger=loguru.logger)
@@ -21,7 +21,7 @@
 # print(res.json())
 
 #CSPM and CWP------------------------------------------------------------------
-# from pcpi import session
+# from pcpi import session_loader
 # import loguru
 
 # session_manager = session.load_from_file(logger=loguru.logger)
@@ -38,7 +38,7 @@
 # print(res2.json())
 
 #Session self healing----------------------------------------------------------
-# from pcpi import session
+# from pcpi import session_loader
 # import loguru
 
 # session_man = session.load_from_file(logger=loguru.logger)
@@ -51,7 +51,7 @@
 # print(res.json())
 
 # #Error and debugging output----------------------------------------------------------
-# from pcpi import session
+# from pcpi import session_loader
 # import loguru
 
 # session_man = session.load_from_file(logger=loguru.logger)
@@ -66,7 +66,7 @@
 ###LOCAL CLONED REPO EXAMPLES==================================================
 
 #Minimum setup-----------------------------------------------------------------
-# from src.pcpi import session
+# from src.pcpi import session_loader
 
 # session_manager = session.load_from_file()
 # cspm_session = session_manager.create_cspm_session()
@@ -75,7 +75,7 @@
 # print(res.json())
 
 #Recommended setup-------------------------------------------------------------
-# from src.pcpi import session
+# from src.pcpi import session_loader
 # import loguru
 
 # session_manager = session.load_from_file(logger=loguru.logger)
@@ -85,7 +85,7 @@
 # print(res.json())
 
 #CSPM and CWP------------------------------------------------------------------
-# from src.pcpi import session
+# from src.pcpi import session_loader
 # import loguru
 
 # session_manager = session.load_from_file(logger=loguru.logger)
@@ -102,7 +102,7 @@
 # print(res2.json())
 
 #Session self healing----------------------------------------------------------
-# from src.pcpi import session
+# from src.pcpi import session_loader
 # import loguru
 
 # session_man = session.load_from_file(logger=loguru.logger)
@@ -115,7 +115,7 @@
 # print(res.json())
 
 # #Error and debugging output----------------------------------------------------------
-# from src.pcpi import session
+# from src.pcpi import session_loader
 # import loguru
 
 # session_man = session.load_from_file(logger=loguru.logger)

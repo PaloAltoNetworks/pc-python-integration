@@ -4,6 +4,14 @@
 
 # Announcements
 
+## Beta release 9/15/2022
+**Patch Notes**
+- Renamed module
+- - session -> session_loader
+
+**Known bugs:**
+- Default logging library is missing output. Using loguru solves this in the meantime.
+
 ## Beta release 9/14/2022
 **Patch Notes**
 - Renamed repo to match package name
