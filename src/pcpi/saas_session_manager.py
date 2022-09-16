@@ -11,7 +11,7 @@ from ._session_types import CSPMSession, SaaSCWPSession
 class SaaSSessionManager:
     def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, logger):
         """
-        Initalizes a Prisma Cloud API Session Manager.
+        Initializes a Prisma Cloud API Session Manager.
 
         Keyword Arguments:
         tenant_name -- Name of tenant associated with session

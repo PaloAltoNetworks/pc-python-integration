@@ -9,7 +9,7 @@ import requests
 from ._session_types import CWPSession
 
 class CWPSessionManager:
-    def __init__(self, tenant_name: str, api_url: str, logger: object, uname='', passwd='', api_token=''):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, logger: object):
         """
         Initializes a Prisma Cloud API Session Manager.
 
@@ -24,7 +24,6 @@ class CWPSessionManager:
         self.tenant = tenant_name
         self.uname = uname
         self.passwd = passwd
-        self.api_token = api_token
         self.api_url = api_url
 
         self.cwp_session = {}        

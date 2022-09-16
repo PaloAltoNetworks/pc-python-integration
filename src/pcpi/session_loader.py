@@ -336,6 +336,45 @@ def __load_uuid_yaml(file_name, logger=py_logger):
 
     return tenant_sessions, entity_type, uuid, cmp_type
 
+#==============================================================================
+
+def onprem_load_from_env(logger=py_logger) -> object:
+    error_exit = False
+
+    name = 'Console'
+    try:
+        name = os.environ['PC_CONSOLE_NAME']
+    except:
+        logger.warning('Missing \'PC_CONSOLE_NAME\' environment variable. Using default name.')
+    
+    api_url = ''
+    api = None
+    try:
+        api_url = os.environ['PC_CONSOLE_URL']
+        api = __validate_url(api_url)
+    except:
+        logger.error('Missing \'PC_CONSOLE_URL\' environment variable.')
+        error_exit = True
+
+    uname = None
+    try:
+        uname = os.environ['PC_CONSOLE_USERNAME']
+    except:
+        logger.error('Missing \'PC_CONSOLE_USERNAME\' environment variable.')
+        error_exit = True
+
+    passwd = None
+    try:
+        passwd = os.environ['PC_CONSOLE_PASSWORD']
+    except:
+        logger.error('Missing \'PC_CONSOLE_PASSWORD\' environment variable.')
+        error_exit = True
+
+    if error_exit:
+        logger.info('Missing required environment variables. Exiting...')
+        exit()
+
+    return CWPSessionManager(name, api_url, uname, passwd, logger)
 
 #==============================================================================
 def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
