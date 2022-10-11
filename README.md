@@ -11,8 +11,60 @@ This tool is supported under "best effort" policies. Please see SUPPORT.md for d
 ```pip3 install pcpi```
 
 # Setup
+1) Import pcpi into your python project
 
-# Use
+2) Create a session manager directly or by using a session loader
+2a) Session Loader arguments are all optional
+2b) Specify a file path, if file_path variable is excluded, the default credential path will be used.
+2c) If the credentials file does not exist, the script will set it up for you at the specified or default file path
+
+3) Create a CSPM or CWP session by using the session manager.
+
+4) Use the created session object to make API requests
+
+```python
+import pcpi
+
+session_loader = pcpi.session_loader
+
+#-- SESSION LOADER FUNCTIONS --
+session_loader.load_from_file()
+session_loader.load_from_env()
+session_loader.load_from_user()
+session_loader.onprem_load_from_file()
+session_loader.onprem_load_from_env()
+session_loader.onprem_load_from_user()
+
+#-- SESSION LOADER ARGUMENTS --
+#Session loader arguments are all optional
+#logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. Can also use a loguru logger object
+#file_path -- Path to credentials file. File will be created at the path specified. Exclude argument to use default path.
+session_loader.load_from_file(logger=, file_path='')
+
+#-- SESSION MANAGERS --
+#Session loader returns a session manager object
+session_manager = session_loader.load_from_env()
+onprem_session_manager = session_loader.load_from_env()
+
+#Session managers return session objects
+#-- SESSION MANAGER FUNCTIONS --
+cspm_session = session_manager.create_cspm_session()
+cwp_session = session_manager.create_cwp_session()
+onprem_cwp_session = onprem_session_manager.create_cwp_session()
+
+#-- SESSION FUNCTION --
+#Session objects are used to make API requests
+cspm_session.request('', '', json={}, params={})
+
+#-- SESSION REQUEST ARGUMENTS --
+#method - required - the http verb used in the request
+#endpoint_url - required - the path of the API endpoint
+#json - optional - the payload for the API call - converts python dictionaries into json automatically
+#data - optional - payload alterative that does not convert python dictionaries into json
+#params - optional - query string parameters can be included as a python dictionary
+```
+
+# Prisma Cloud Python Integration Documentation and Examples
 
 ## Session Loaders
 
@@ -29,11 +81,13 @@ loguru_logger = logger
 
 from pcpi import session_loader
 
+#--DEFAULT OPTION--
 #Defaults to a file named 'tenant_credentials.yml'
 session_manager_default = session_loader.load_from_file(logger=loguru_logger)
 
+#--CUSTOM OPTION--
 #File must be a yaml (.yml) file. 
-#If a file that does not exist is specified, the script will build one.
+#If a file that does not exist is specified, the script will build one. Only creates end file, not directory structure. That setup is up to you.
 session_manager = session_loader.load_from_file(file_path='~/secrets/my_secrets.yml')
 
 cspm_session = session_manager.create_cspm_session()
@@ -182,8 +236,27 @@ print(res.json())
 
 # Announcements
 
-## Beta release 8/11/2022
+## Stable release 8/11/2022
+**News**
+Current version is considered stable as known bugs have been fixed.
+Documentation is still a work in progress.
+Not all features have been implemented yet.
+Current Features:
+- SaaS CSPM, SaaS CWP, and On-prem CWP session/JWT management
+- - Generates JWT tokens as needed and uses them for full valid duration
+- - Progressive back-off algorithm to avoid API DOS protections
+- - Automatic retires on error codes
+- - Detailed logging support through Python Logging and Loguru modules
+- Session Loaders that handle credential management for you to jump start your script development.
+- - Supports loading credentials from a file, from environment variables, and directly from the user as a series of prompts.
+- - Will build out credential files for you, just specify desired file path
+- - Helpful debug messages on missing values for environment variables
+- Session Managers that intelligently handle SaaS and On-Prem sessions
+- - Reuses existing CSPM SaaS session when making SaaS CWP API calls
+- - Direct access to session managers to enable you to handle credentials as you see fit
+
 **Patch Notes**
+- On-prem support
 - Fixed Keyboard Interrupt exception handling
 - Fixed default logger bug
 
