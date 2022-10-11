@@ -8,6 +8,10 @@ This tool is supported under "best effort" policies. Please see SUPPORT.md for d
 
 # Announcements
 
+## Beta release 8/11/2022
+**Patch Notes**
+- Fixed Keyboard Interrupt exception handling
+
 ## Beta release 9/15/2022
 **Patch Notes**
 - Renamed module
