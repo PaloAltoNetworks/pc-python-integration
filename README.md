@@ -44,7 +44,7 @@ session_loader.load_from_file(logger=, file_path='')
 #-- SESSION MANAGERS --
 #Session loader returns a session manager object
 session_manager = session_loader.load_from_env()
-onprem_session_manager = session_loader.load_from_env()
+onprem_session_manager = session_loader.onprem_load_from_env()
 
 #Session managers return session objects
 #-- SESSION MANAGER FUNCTIONS --
