@@ -94,8 +94,6 @@ class SaaSCWPSession(Session):
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
-            self.logger.info('Exiting...')
-            quit()
 
         return res
 

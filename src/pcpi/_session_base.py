@@ -20,7 +20,7 @@ class Session:
         self.retry_timer = 0
         self.retry_timer_max = 32
 
-        self.uknown_error_max = 5
+        self.unknown_error_max = 5
 
         self.logger = logger
 
@@ -28,7 +28,7 @@ class Session:
     def _api_login_wrapper(self):
         res = ''
         u_count = 0
-        while res == '' and u_count < self.uknown_error_max:
+        while res == '' and u_count < self.unknown_error_max:
             try:
                 res = self._api_login()
 
@@ -82,7 +82,7 @@ class Session:
 
             except:
                 u_count += 1
-                self.logger.error(f'Uknown error in API login. Retrying {u_count} of {self.uknown_error_max}')
+                self.logger.error(f'Unknown error in API login. Retrying {u_count} of {self.unknown_error_max}')
 
 #==============================================================================
     def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, redlock_ignore: list=None, status_ignore: list=[]):
@@ -99,7 +99,7 @@ class Session:
         """
         res = ''
         u_count = 0
-        while res == '' and u_count < self.uknown_error_max:
+        while res == '' and u_count < self.unknown_error_max:
             try:
                 self.logger.debug(f'{url}')
                 res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params)
@@ -185,9 +185,14 @@ class Session:
                         self.logger.info(json_data)
 
                 return res
-            except:
+            except KeyboardInterrupt:
+                self.logger.error('Keyboard Interrupt. Exiting...')
+                exit()
+            except Exception as e:
+                self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR. RETRYING {u_count} of {self.uknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR. RETRYING {u_count} of {self.unknown_error_max}')
+            
 
     #==============================================================================
 
@@ -213,17 +218,21 @@ class Session:
 
 
     def __request_wrapper(self, method, url, headers, json, data, params):
-        counter = 1
+        u_count = 0
         r = ''
-        while r == '' and counter < self.retries:
-            counter += 1
+        while r == '' and u_count < self.retries:
+            u_count += 1
             try:
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params)
                 return r
-            except:
-                self.logger.error('Request failed, retrying...')
-                time.sleep(5)
-                continue
+            except KeyboardInterrupt:
+                self.logger.error('Keyboard Interrupt. Exiting...')
+                exit()
+            except Exception as e:
+                self.logger.error(e)
+                u_count += 1
+                self.logger.error(f'UNKNOWN ERROR. RETRYING {u_count} of {self.unknown_error_max}')
+
             
 
         return requests.request(method, url, headers=headers, json=json, data=data, params=params)
