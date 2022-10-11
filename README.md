@@ -11,6 +11,7 @@ This tool is supported under "best effort" policies. Please see SUPPORT.md for d
 ## Beta release 8/11/2022
 **Patch Notes**
 - Fixed Keyboard Interrupt exception handling
+- Fixed default logger bug
 
 ## Beta release 9/15/2022
 **Patch Notes**
