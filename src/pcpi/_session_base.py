@@ -13,7 +13,7 @@ class Session:
         logger - optional logger, either pylib logger or loguru
         """
         self.retries = 20
-        self.retry_statuses = [401, 429, 500, 502, 503, 504]
+        self.retry_statuses = [401, 425, 429, 500, 502, 503, 504]
         self.retry_delay_statuses = [429, 500, 502, 503, 504]
         self.success_status = [200,201,202,203,204,205,206]
         self.expired_code = 401
