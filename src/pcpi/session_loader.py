@@ -8,7 +8,8 @@ import requests
 import logging
 
 #Default Logger
-py_logger = logging.getLogger()
+logging.basicConfig()
+py_logger = logging.getLogger("pcpi")
 py_logger.setLevel(10)
 
 #Local
