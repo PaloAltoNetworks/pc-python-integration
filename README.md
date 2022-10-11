@@ -13,9 +13,9 @@ This tool is supported under "best effort" policies. Please see SUPPORT.md for d
 # Setup
 1) Import pcpi into your python project
 
-2) Create a session manager directly or by using a session loader
-2a) Session Loader arguments are all optional
-2b) Specify a file path, if file_path variable is excluded, the default credential path will be used.
+2) Create a session manager directly or by using a session loader  
+2a) Session Loader arguments are all optional.  
+2b) Specify a file path, if file_path variable is excluded, the default credential path will be used.  
 2c) If the credentials file does not exist, the script will set it up for you at the specified or default file path
 
 3) Create a CSPM or CWP session by using the session manager.
