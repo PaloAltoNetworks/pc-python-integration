@@ -7,10 +7,52 @@
 This tool is supported under "best effort" policies. Please see SUPPORT.md for details.
 
 # Installation
+This tool requires Python3. Please visit https://www.python.org/downloads/ for Python3 installation guides.
 
-```pip3 install pcpi```
+Depending on your environment, you may have to install the pcpi library in a different way.
 
-# Setup
+**This tool only needs to be installed in ONE of these ways, do not run all of these commands.**
+
+Run one of the following commands in a terminal/command prompt:
+
+Mac/Linux
+- ```pip3 install pcpi```
+- ```python3 -m pip install pcpi```
+- ```pip install pcpi```
+
+Windows
+- ```py -m pip install pcpi```
+- ```python -m install pcpi```
+- ```pip install pcpi```
+
+# Quick Start
+
+1) Create a file with a text editor of your choice (I recommend VS Code). Name this file **script.py**
+2) Open the file and add these lines:
+```python
+from pcpi import session_loader
+session_man = session_loader.load_from_file()
+cspm_session = session_man.create_cspm_session()
+
+res = cspm_session.request('GET', '/cloud')
+
+print(res.json())
+```
+3) Run the script by opening a terminal/command prompt, navigating to your directory/folder then using the Python command and specifying the name of your Python script. You may have to use a different name for the Python program depending on your environment.
+
+Mac/Linux
+```
+python3 script.py
+```
+Windows
+```
+py script.py
+```
+4) When running this script for the first time, the pcpi library will prompt you for your Prisma Cloud credentials. Follow the prompts and if all goes well, you should see some ```SUCCESS``` messages being logged to your terminal. If you see ```ERROR```s, then you may have to disable any VPNs you are connected too and you need to ensure you have valid Prisma Cloud credentials.
+
+5) This example script calls the ```/cloud``` endpoint. After this script runs, you should see data from your tenant about cloud accounts in JSON format.
+
+# Scripting Setup Guide
 1) Import pcpi into your python project
 
 2) Create a session manager directly or by using a session loader  
@@ -21,6 +63,11 @@ This tool is supported under "best effort" policies. Please see SUPPORT.md for d
 3) Create a CSPM or CWP session by using the session manager.
 
 4) Use the created session object to make API requests
+
+5) Run the script
+```
+python3 <yourscriptname>.py
+```
 
 ```python
 import pcpi
