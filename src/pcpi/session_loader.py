@@ -155,7 +155,7 @@ def __validate_url(url):
 
 def __get_cwp_tenant_credentials():
 
-    __c_print('Enter tenant name or any preferred identifier (optional):', color='blue')
+    __c_print('Enter console name or any preferred identifier (optional):', color='blue')
     name = input()
 
     __c_print('Enter console base url with port number:', color='blue')
@@ -175,7 +175,7 @@ def __get_cwp_tenant_credentials():
 
 def __get_tenant_credentials():
 
-    __c_print('Enter tenant name or any preferred identifier:', color='blue')
+    __c_print('Enter tenant name or any preferred identifier (optional):', color='blue')
     name = input()
 
     __c_print('Enter tenant url. (ex: https://app.ca.prismacloud.io):', color='blue')
