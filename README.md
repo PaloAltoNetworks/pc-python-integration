@@ -145,6 +145,8 @@ response = cspm_session.request('GET', '/cloud')
 print(response.json())
 ```
 
+For SaaS CSPM and CWP
+
 ```python
 from pcpi import session_loader
 
@@ -156,6 +158,8 @@ from pcpi import session_loader
 
 session_manager = session_loader.load_from_user()
 ```
+
+For CWP Self Hosted
 
 ```python
 from pcpi import session_loader
@@ -205,7 +209,7 @@ session_manager = onprem_session_manager.CWPSessionManager(
     tenant_name='My PC Tenant',
     uname='xxxxxxxxxxxxxxxxxxxxxxxxxx',
     passwd='xxxxxxxxxxxxxxxxxxxxxxxxxx',
-    api_url='https://api.prismacloud.io',
+    api_url='https://<yourselfhostedurl>',
     logger=py_logger
 )
 
