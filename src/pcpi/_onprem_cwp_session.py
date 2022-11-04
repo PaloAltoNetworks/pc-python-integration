@@ -9,7 +9,7 @@ from ._session_base import Session
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify, logger: object):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -39,6 +39,8 @@ class CWPSession(Session):
             'Authorization': 'Bearer '
         }
 
+        self.verify = verify
+
         self._api_login_wrapper()
 
 #==============================================================================
@@ -66,7 +68,7 @@ class CWPSession(Session):
 
         res = object()
         try:
-            res = requests.request("POST", url, headers=headers, json=payload)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')

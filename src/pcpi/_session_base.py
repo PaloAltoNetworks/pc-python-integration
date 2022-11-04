@@ -80,12 +80,20 @@ class Session:
 
                 return token
 
-            except:
+            except KeyboardInterrupt:
+                self.logger.error('Keyboard Interrupt. Exiting...')
+                exit()
+            except Exception as e:
+                self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'Unknown error in API login. Retrying {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API login. Retrying {u_count} of {self.unknown_error_max}')
+                self.logger.warning('Steps to troubleshoot: ')
+                self.logger.warning('1) Disable any VPNs.')
+                self.logger.warning('2) Ensure API base URL is correct.')
+                time.sleep(1)
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -102,7 +110,7 @@ class Session:
         while res == '' and u_count < self.unknown_error_max:
             try:
                 self.logger.debug(f'{url}')
-                res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params)
+                res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     try:
@@ -136,7 +144,7 @@ class Session:
                     self.logger.warning(f'Retrying request. Code {res.status_code}.')
                     self.logger.debug(f'{url}')
 
-                    res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params)
+                    res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)
                     retries += 1
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
@@ -191,12 +199,13 @@ class Session:
             except Exception as e:
                 self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR. RETRYING {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying {u_count} of {self.unknown_error_max}')
+                time.sleep(1)
             
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -214,16 +223,16 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
 
-    def __request_wrapper(self, method, url, headers, json, data, params):
+    def __request_wrapper(self, method, url, headers, json, data, params, verify):
         u_count = 0
         r = ''
         while r == '' and u_count < self.retries:
             u_count += 1
             try:
-                r = requests.request(method, url, headers=headers, json=json, data=data, params=params)
+                r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
                 return r
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
@@ -231,7 +240,8 @@ class Session:
             except Exception as e:
                 self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR. RETRYING {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - Request Wrapper. Retrying {u_count} of {self.unknown_error_max}')
+                time.sleep(1)
 
             
 
