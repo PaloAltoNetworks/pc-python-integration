@@ -4,6 +4,9 @@ import enum
 #Installed
 import requests
 
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 #Local
 from ._session_base import Session
 
@@ -26,6 +29,7 @@ class CWPSession(Session):
         self.tenant = tenant_name
         self.uname = uname
         self.passwd = passwd
+        self.verify = verify
 
         self.api_url = api_url
 
@@ -38,8 +42,6 @@ class CWPSession(Session):
             'content-type': 'application/json; charset=UTF-8',
             'Authorization': 'Bearer '
         }
-
-        self.verify = verify
 
         self._api_login_wrapper()
 

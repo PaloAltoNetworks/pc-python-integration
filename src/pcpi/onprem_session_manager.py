@@ -1,15 +1,8 @@
-#Standard Library
-import time
-import logging
-
-#Installed
-import requests
-
 #Local
 from ._session_types import CWPSession
 
 class CWPSessionManager:
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, verify, logger: object):
         """
         Initializes a Prisma Cloud API Session Manager.
 
@@ -26,11 +19,13 @@ class CWPSessionManager:
         self.passwd = passwd
         self.api_url = api_url
 
+        self.verify = verify
+
         self.cwp_session = {}        
 
 
 #==============================================================================
     def create_cwp_session(self):
-        session = CWPSession(self.tenant, self.api_url, self.uname, self.passwd, self.logger)
+        session = CWPSession(self.tenant, self.api_url, self.uname, self.passwd, self.verify, self.logger)
         self.cwp_session = session
         return session

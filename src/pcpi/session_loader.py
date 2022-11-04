@@ -7,6 +7,9 @@ import yaml
 import requests
 import logging
 
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 #Default Logger
 logging.basicConfig()
 py_logger = logging.getLogger("pcpi")
@@ -59,7 +62,7 @@ def __c_print(*args, **kwargs):
 
 #==============================================================================
 
-def __validate_cwp_credentials(name, _url, uname, passwd) -> bool:
+def __validate_cwp_credentials(name, _url, uname, passwd, verify) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
     if the user successfully entered valid credentials.
@@ -78,7 +81,7 @@ def __validate_cwp_credentials(name, _url, uname, passwd) -> bool:
 
     try:
         __c_print('API - Validating credentials')
-        res = requests.request("POST", url, headers=headers, json=payload)
+        res = requests.request("POST", url, headers=headers, json=payload, verify=verify)
         print(res.status_code)
 
         if res.status_code == 200:
@@ -99,7 +102,7 @@ def __validate_cwp_credentials(name, _url, uname, passwd) -> bool:
         quit()
         return False
 
-def __validate_credentials(a_key, s_key, url) -> bool:
+def __validate_credentials(a_key, s_key, url, verify) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
     if the user successfully entered valid credentials.
@@ -116,7 +119,7 @@ def __validate_credentials(a_key, s_key, url) -> bool:
 
     try:
         __c_print('API - Validating credentials')
-        response = requests.request("POST", f'{url}/login', headers=headers, json=payload)
+        response = requests.request("POST", f'{url}/login', headers=headers, json=payload, verify=verify)
 
         if response.status_code == 200:
             __c_print('SUCCESS', color='green')
@@ -169,9 +172,22 @@ def __get_cwp_tenant_credentials():
     __c_print('Enter console password:', color='blue')
     passwd = input()
     print()
-    
 
-    return name, url, uname, passwd
+    __c_print('Certificate verification: (True/False/<path to .pem file>)', color='blue')
+    __c_print('Leave blank to use default value.', color='yellow')
+    verify = input()
+    print()
+
+    if verify == '':
+        verify = True
+    elif verify.lower() == 'true':
+        verify = True
+    elif verify.lower() == 'false':
+        verify = False
+    else:
+        pass
+
+    return name, url, uname, passwd, verify
 
 def __get_tenant_credentials():
 
@@ -194,28 +210,44 @@ def __get_tenant_credentials():
     __c_print('Enter tenant secret key:', color='blue')
     s_key = input()
     print()
+
+    __c_print('Certificate verification: (True/False/<path to .pem file>)', color='blue')
+    __c_print('Leave blank to use default value.', color='yellow')
+    verify = input()
+    print()
+
+    if verify == '':
+        verify = True
+    elif verify.lower() == 'true':
+        verify = True
+    elif verify.lower() == 'false':
+        verify = False
+    else:
+        pass
     
 
-    return name, a_key, s_key, new_url
+    return name, a_key, s_key, new_url, verify
 
 #==============================================================================
 
-def __build_cwp_session_dict(name, url, uname, passwd):
+def __build_cwp_session_dict(name, url, uname, passwd, verify):
     session_dict = {
         name: {
             'url': url,
             'uname': uname,
-            'passwd': passwd
+            'passwd': passwd,
+            'verify': verify
             }
     }
     return session_dict
 
-def __build_session_dict(name, a_key, s_key, url):
+def __build_session_dict(name, a_key, s_key, url, verify):
     session_dict = {
         name: {
             'access_key': a_key,
             'secret_key': s_key,
-            'api_url': url
+            'api_url': url,
+            'verify': verify
             }
     }
     return session_dict
@@ -232,15 +264,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, uname, passwd = __get_cwp_tenant_credentials()
+                name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, uname, passwd)
+                valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
 
         return credentials
     else:
@@ -249,15 +281,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, uname, passwd = __get_cwp_tenant_credentials()
+                name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, uname, passwd)
+                valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -278,15 +310,15 @@ def __get_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the tenant', color='blue')
                 print()
-                src_name, src_a_key, src_s_key, src_url = __get_tenant_credentials()
+                src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
                 
-                valid = __validate_credentials(src_a_key, src_s_key, src_url)
+                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url))
+                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
 
         return credentials
     else:
@@ -295,15 +327,15 @@ def __get_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the tenant', color='blue')
                 print()
-                src_name, src_a_key, src_s_key, src_url = __get_tenant_credentials()
+                src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
                 
-                valid = __validate_credentials(src_a_key, src_s_key, src_url)
+                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url))
+                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -371,11 +403,21 @@ def onprem_load_from_env(logger=py_logger) -> object:
         logger.error('Missing \'PC_CONSOLE_PASSWORD\' environment variable.')
         error_exit = True
 
+    verify = True
+    try:
+        verify = os.environ['PC_API_VERIFY']
+        if verify.lower() == 'false':
+            verify = False
+        if verify.lower() == 'true':
+            verify = True
+    except:
+        logger.error('Missing \'PC_API_VERIFY\' environment variable.')
+
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
         exit()
 
-    return CWPSessionManager(name, api_url, uname, passwd, logger)
+    return CWPSessionManager(name, api_url, uname, passwd, verify, logger)
 
 #==============================================================================
 def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
@@ -404,8 +446,17 @@ def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_l
         uname = cfg[tenant]['uname']
         passwd = cfg[tenant]['passwd']
         api_url = cfg[tenant]['api_url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
 
 
     return tenant_sessions
@@ -436,8 +487,17 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger)
         uname = cfg[tenant]['uname']
         passwd = cfg[tenant]['passwd']
         api_url = cfg[tenant]['url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
 
     try:   
         return tenant_sessions[0]
@@ -470,9 +530,18 @@ def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=p
         a_key = cfg[tenant]['access_key']
         s_key = cfg[tenant]['secret_key']
         api_url = cfg[tenant]['api_url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
 
         if saas == True:
-            tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, logger))
+            tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, verify, logger))
        
 
     return tenant_sessions
@@ -502,8 +571,17 @@ def load_from_file(file_path='tenant_credentials.yml', logger=py_logger) -> list
         a_key = cfg[tenant]['access_key']
         s_key = cfg[tenant]['secret_key']
         api_url = cfg[tenant]['api_url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
 
-        tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, logger))
+        tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, verify, logger))
 
     try:   
         return tenant_sessions[0]
@@ -556,8 +634,17 @@ def load_from_user(logger=py_logger, num_tenants=-1) -> list:
     for tenant in tenants:
         for key in tenant:
             name = key
+            verify = True
+            try:
+                verify = tenant[name]['verify']
+                if verify.lower() == 'false':
+                    verify = False
+                if verify.lower() == 'true':
+                    verify = True
+            except:
+                pass
 
-            tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], logger))
+            tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], verify, logger))
             
 
     return tenant_sessions

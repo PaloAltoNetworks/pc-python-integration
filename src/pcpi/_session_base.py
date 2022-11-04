@@ -4,6 +4,9 @@ import time
 #installed
 import requests
 
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 class Session:
     def __init__(self,logger):
         """
@@ -93,7 +96,7 @@ class Session:
                 time.sleep(1)
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, redlock_ignore: list=None, status_ignore: list=[]):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -205,7 +208,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, redlock_ignore: list=None, status_ignore: list=[]):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 

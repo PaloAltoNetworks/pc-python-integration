@@ -1,13 +1,16 @@
 #Installed
 import requests
 
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 #Local
 from ._session_base import Session
 from ._cspm_session import CSPMSession
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class SaaSCWPSession(Session):
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, logger, cspm_session={}):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger, cspm_session={}):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -24,6 +27,7 @@ class SaaSCWPSession(Session):
         self.a_key = a_key
         self.s_key = s_key
         self.api_url = api_url
+        self.verify = verify
 
         self.logger = logger
 
@@ -52,7 +56,7 @@ class SaaSCWPSession(Session):
 
 #==============================================================================
     def __get_cspm_session(self):
-        self.cspm_session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.logger)
+        self.cspm_session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.logger)
         self.cspm_token = self.cspm_session.token
     
     def __cspm_login(self):
@@ -90,7 +94,7 @@ class SaaSCWPSession(Session):
 
         res = object()
         try:
-            res = requests.request("POST", url, headers=headers, json=payload)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')

@@ -1,12 +1,15 @@
 #Installed
 import requests
 
+from urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
 #Local
 from ._session_base import Session
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CSPMSession(Session):
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, logger):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -22,6 +25,7 @@ class CSPMSession(Session):
         self.a_key = a_key
         self.s_key = s_key
         self.api_url = api_url
+        self.verify = verify
 
         self.token = ''
 
@@ -58,7 +62,7 @@ class CSPMSession(Session):
         self.logger.debug('API - Generating CSPM session token.')
         res = object()
         try:
-            res = requests.request("POST", url, headers=headers, json=payload)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
