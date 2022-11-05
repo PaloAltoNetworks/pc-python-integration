@@ -22,8 +22,10 @@ Mac/Linux
 
 Windows
 - ```py -m pip install pcpi```
-- ```python -m install pcpi```
+- ```python -m pip install pcpi```
 - ```pip install pcpi```
+- ```pip3 install pcpi```
+- ```python3 -m pip install pcpi```
 
 # Quick Start
 
