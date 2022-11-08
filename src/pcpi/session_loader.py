@@ -411,7 +411,7 @@ def onprem_load_from_env(logger=py_logger) -> object:
         if verify.lower() == 'true':
             verify = True
     except:
-        logger.error('Missing \'PC_API_VERIFY\' environment variable.')
+        logger.warning('Missing \'PC_API_VERIFY\' environment variable. Using default value...')
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
@@ -445,7 +445,7 @@ def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_l
     for tenant in cfg:
         uname = cfg[tenant]['uname']
         passwd = cfg[tenant]['passwd']
-        api_url = cfg[tenant]['api_url']
+        api_url = cfg[tenant]['url']
         verify = True
         try:
             verify = cfg[tenant]['verify']
@@ -505,7 +505,7 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger)
         logger.error('Error - No credentials found. Exiting...')
         exit()
 
-def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
+def load_multi_from_file(file_path='tenant_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
     '''
     Reads config.yml and generates a Session object for the tenant
     Returns:
@@ -540,8 +540,7 @@ def load_multi_from_file(saas:bool, file_path='tenant_credentials.yml', logger=p
         except:
             pass
 
-        if saas == True:
-            tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, verify, logger))
+        tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, verify, logger))
        
 
     return tenant_sessions
@@ -621,11 +620,21 @@ def load_from_env(logger=py_logger) -> object:
         logger.error('Missing \'PC_TENANT_S_KEY\' environment variable.')
         error_exit = True
 
+    verify = True
+    try:
+        verify = os.environ['PC_API_VERIFY']
+        if verify.lower() == 'false':
+            verify = False
+        if verify.lower() == 'true':
+            verify = True
+    except:
+        logger.warning('Missing \'PC_API_VERIFY\' environment variable. Using default value...')
+
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
         exit()
 
-    return SaaSSessionManager(name, a_key, s_key, api_url, logger)
+    return SaaSSessionManager(name, a_key, s_key, api_url, verify, logger)
 
 
 def load_from_user(logger=py_logger, num_tenants=-1) -> list:
