@@ -65,6 +65,7 @@ def load_onprem_environment():
         os.environ[f'PC_CONSOLE_VERIFY{index}'] = str(verify)
     
 #UNIT TESTS====================================================================
+
 class credentialFileTests(TestCase):
     def testLoadMultiFromFile(self):
         load_environment()
@@ -83,7 +84,10 @@ class credentialFileTests(TestCase):
         verify2 = os.environ['PC_TENANT_VERIFY1']
 
         result = session_loader.load_multi_from_file(num_tenants=2)
-        self.assertEqual([result[0].api_url, result[1].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url,saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).api_url])
+        self.assertEqual([result[0].tenant, result[1].tenant], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).tenant, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).tenant])
+        self.assertEqual([result[0].a_key, result[1].a_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).a_key])
+        self.assertEqual([result[0].s_key, result[1].s_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).s_key])
+        self.assertEqual([result[0].api_url, result[1].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).api_url])
 
     def testLoadFromFile(self):
         load_environment()
@@ -96,6 +100,9 @@ class credentialFileTests(TestCase):
         verify = os.environ['PC_TENANT_VERIFY0']
 
         result = session_loader.load_from_file()
+        self.assertEqual(result.tenant, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).tenant)
+        self.assertEqual(result.a_key, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key)
+        self.assertEqual(result.s_key, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key)
         self.assertEqual(result.api_url, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url)
 
     def testOnpremLoadMultiFromFile(self):
@@ -116,6 +123,9 @@ class credentialFileTests(TestCase):
 
         result = session_loader.onprem_load_multi_from_file(num_tenants=2)
 
+        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).tenant])
+        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).uname])
+        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).passwd])
         self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).api_url])
 
     def testOnpremLoadFromFile(self):
@@ -130,7 +140,38 @@ class credentialFileTests(TestCase):
 
         result = session_loader.onprem_load_from_file()
 
+        self.assertEqual(result.tenant, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant)
+        self.assertEqual(result.uname, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname)
+        self.assertEqual(result.passwd, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd)
         self.assertEqual(result.api_url, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url)
+
+class apiRequestTest(TestCase):
+    def testCSPMRecovery(self):
+        from src.pcpi import session_loader
+        manager = session_loader.load_from_file()
+        cspm_session = manager.create_cspm_session()
+        res = cspm_session.request('GET', '/cloud')
+        cspm_session.headers = {
+            'content-type': 'application/json; charset=UTF-8',
+            'x-redlock-auth': 'asd'
+        }
+        res1 = cspm_session.request('GET', '/cloud')
+
+        self.assertEqual(res.json(), res1.json())
+
+    def testCWPRecovery(self):
+        from src.pcpi import session_loader
+        manager = session_loader.load_from_file()
+        cwp_session = manager.create_cwp_session()
+        res = cwp_session.request('GET', '/api/v1/users')
+        cwp_session.headers = {
+            'content-type': 'application/json; charset=UTF-8',
+            'Authorization': 'Bearer dfsdfsd'
+        }
+        cwp_session.cspm_token = 'sdfsdf'
+        res1 = cwp_session.request('GET', '/api/v1/users')
+
+        self.assertEqual(res.json(), res1.json())
 
 if __name__ == '__main__':
     unittest.main()
