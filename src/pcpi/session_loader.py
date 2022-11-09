@@ -254,6 +254,35 @@ def __build_session_dict(name, a_key, s_key, url, verify):
 
 #==============================================================================
 
+def __get_min_cwp_credentials_from_user(min_tenants):
+    credentials = []
+    tenants_added = 0
+
+    while True:
+        valid = False
+        while not valid:
+            __c_print('Enter credentials for the console', color='blue')
+            print()
+            name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
+            
+            valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
+            if valid == False:
+                __c_print('FAILED', end=' ', color='red')
+                print('Invalid credentials. Please re-enter your credentials')
+                print()
+            else:
+                credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
+                tenants_added += 1
+        
+        if tenants_added >= min_tenants:
+            __c_print('Would you like to add an other tenant? Y/N')
+            choice = input().lower()
+
+            if choice != 'yes' and choice != 'y':
+                break
+
+    return credentials
+
 def __get_cwp_credentials_from_user(num_tenants):
     #Gets the source tenant credentials and ensures that are valid
     credentials = []
@@ -299,6 +328,33 @@ def __get_cwp_credentials_from_user(num_tenants):
 
         return credentials
 
+def __get_min_credentials_from_user(min_tenants):
+    credentials = []
+    tenants_added = 0
+    while True:
+        valid = False
+        while not valid:
+            __c_print('Enter credentials for the tenant', color='blue')
+            print()
+            src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
+            
+            valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
+            if valid == False:
+                __c_print('FAILED', end=' ', color='red')
+                print('Invalid credentials. Please re-enter your credentials')
+                print()
+            else:
+                credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
+                tenants_added += 1
+        
+        if tenants_added >= min_tenants:
+            __c_print('Would you like to add an other tenant? Y/N')
+            choice = input().lower()
+
+            if choice != 'yes' and choice != 'y':
+                break
+
+    return credentials
 
 def __get_credentials_from_user(num_tenants):
     #Gets the source tenant credentials and ensures that are valid
@@ -420,6 +476,46 @@ def onprem_load_from_env(logger=py_logger) -> object:
     return CWPSessionManager(name, api_url, uname, passwd, verify, logger)
 
 #==============================================================================
+def onprem_load_min_from_file(min_tenants, file_path='console_credentials.yml', logger=py_logger):
+    '''
+    Reads console_credentials.yml or specified file path to load
+    self hosted CWP console credentials to create a session.
+    Returns a CWP session object.
+    '''
+    #Open and load config file
+    if not os.path.exists(file_path):
+        #Create credentials yml file
+        __c_print('No credentials file found. Generating...', color='yellow')
+        print()
+        tenants = __get_min_cwp_credentials_from_user(min_tenants)
+        with open(file_path, 'w') as yml_file: 
+            for tenant in tenants:
+                yaml.dump(tenant, yml_file, default_flow_style=False)
+
+    cfg = {}
+    with open(file_path, "r") as file:
+        cfg = yaml.load(file, Loader=yaml.BaseLoader)
+
+    #Parse cfg for tenant names and create tokens for each tenant
+    tenant_sessions = []
+    for tenant in cfg:
+        uname = cfg[tenant]['uname']
+        passwd = cfg[tenant]['passwd']
+        api_url = cfg[tenant]['url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
+
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
+
+    return tenant_sessions
+
 def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
     '''
     Reads console_credentials.yml or specified file path to load
@@ -504,6 +600,45 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger)
     except:
         logger.error('Error - No credentials found. Exiting...')
         exit()
+
+def load_min_from_file(min_tenants, file_path='tenant_credentials.yml', logger=py_logger) -> list:
+    '''
+    Reads config.yml and generates a Session object for the tenant
+    Returns:
+    Tenant Session object
+    '''
+    #Open and load config file
+    if not os.path.exists(file_path):
+        #Create credentials yml file
+        __c_print('No credentials file found. Generating...', color='yellow')
+        print()
+        tenants = __get_min_credentials_from_user(min_tenants)
+        with open(file_path, 'w') as yml_file:
+            for tenant in tenants:
+                yaml.dump(tenant, yml_file, default_flow_style=False)
+
+    with open(file_path, "r") as file:
+        cfg = yaml.load(file, Loader=yaml.BaseLoader)
+
+    #Parse cfg for tenant names and create tokens for each tenant
+    tenant_sessions = []
+    for tenant in cfg:
+        a_key = cfg[tenant]['access_key']
+        s_key = cfg[tenant]['secret_key']
+        api_url = cfg[tenant]['api_url']
+        verify = True
+        try:
+            verify = cfg[tenant]['verify']
+            if verify.lower() == 'false':
+                verify = False
+            if verify.lower() == 'true':
+                verify = True
+        except:
+            pass
+
+        tenant_sessions.append(SaaSSessionManager(tenant, a_key, s_key, api_url, verify, logger))
+       
+    return tenant_sessions
 
 def load_multi_from_file(file_path='tenant_credentials.yml', logger=py_logger, num_tenants=-1) -> list:
     '''
@@ -636,8 +771,27 @@ def load_from_env(logger=py_logger) -> object:
 
     return SaaSSessionManager(name, a_key, s_key, api_url, verify, logger)
 
+def load_min_from_user(min_tenants, logger=py_logger):
+    tenant_sessions = []
+    tenants = __get_min_credentials_from_user(min_tenants)
+    for tenant in tenants:
+        for key in tenant:
+            name = key
+            verify = True
+            try:
+                verify = tenant[name]['verify']
+                if verify.lower() == 'false':
+                    verify = False
+                if verify.lower() == 'true':
+                    verify = True
+            except:
+                pass
 
-def load_from_user(logger=py_logger, num_tenants=-1) -> list:
+            tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], verify, logger))
+            
+    return tenant_sessions
+
+def load_multi_from_user(logger=py_logger, num_tenants=-1) -> list:
     tenant_sessions = []
     tenants = __get_credentials_from_user(num_tenants)
     for tenant in tenants:
@@ -655,8 +809,24 @@ def load_from_user(logger=py_logger, num_tenants=-1) -> list:
 
             tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], verify, logger))
             
-
     return tenant_sessions
 
+def load_from_user(logger=py_logger) -> list:
+    tenant_sessions = []
+    tenants = __get_credentials_from_user(1)
+    for tenant in tenants:
+        for key in tenant:
+            name = key
+            verify = True
+            try:
+                verify = tenant[name]['verify']
+                if verify.lower() == 'false':
+                    verify = False
+                if verify.lower() == 'true':
+                    verify = True
+            except:
+                pass
 
-
+            tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], verify, logger))
+            
+    return tenant_sessions[0]

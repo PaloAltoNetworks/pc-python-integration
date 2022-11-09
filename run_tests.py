@@ -67,6 +67,29 @@ def load_onprem_environment():
 #UNIT TESTS====================================================================
 
 class credentialFileTests(TestCase):
+    def testLoadMinFromFile(self):
+        load_environment()
+        from src.pcpi import session_loader
+        from src.pcpi import saas_session_manager
+        name = os.environ['PC_TENANT_NAME0']
+        api_url = os.environ['PC_TENANT_API0']
+        a_key = os.environ['PC_TENANT_A_KEY0']
+        s_key = os.environ['PC_TENANT_S_KEY0']
+        verify = os.environ['PC_TENANT_VERIFY0']
+
+        name2 = os.environ['PC_TENANT_NAME1']
+        api_url2 = os.environ['PC_TENANT_API1']
+        a_key2 = os.environ['PC_TENANT_A_KEY1']
+        s_key2 = os.environ['PC_TENANT_S_KEY1']
+        verify2 = os.environ['PC_TENANT_VERIFY1']
+
+        result = session_loader.load_min_from_file(2)
+        self.assertEqual([result[0].tenant, result[1].tenant], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).tenant, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).tenant])
+        self.assertEqual([result[0].a_key, result[1].a_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).a_key])
+        self.assertEqual([result[0].s_key, result[1].s_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).s_key])
+        self.assertEqual([result[0].api_url, result[1].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).api_url])
+
+
     def testLoadMultiFromFile(self):
         load_environment()
         from src.pcpi import session_loader
@@ -104,6 +127,29 @@ class credentialFileTests(TestCase):
         self.assertEqual(result.a_key, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key)
         self.assertEqual(result.s_key, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key)
         self.assertEqual(result.api_url, saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url)
+
+    def testOnpremLoadMinFromFile(self):
+        load_onprem_environment()
+        from src.pcpi import session_loader
+        from src.pcpi import onprem_session_manager
+        name = os.environ['PC_CONSOLE_NAME0']
+        api_url = os.environ['PC_CONSOLE_API0']
+        uname = os.environ['PC_CONSOLE_UNAME0']
+        passwd = os.environ['PC_CONSOLE_PASSWD0']
+        verify =  os.environ['PC_CONSOLE_VERIFY0']
+
+        name2 = os.environ['PC_CONSOLE_NAME1']
+        api_url2 = os.environ['PC_CONSOLE_API1']
+        uname2 = os.environ['PC_CONSOLE_UNAME1']
+        passwd2 = os.environ['PC_CONSOLE_PASSWD1']
+        verify2 =  os.environ['PC_CONSOLE_VERIFY1']
+
+        result = session_loader.onprem_load_min_from_file(2)
+
+        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).tenant])
+        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).uname])
+        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).passwd])
+        self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).api_url])
 
     def testOnpremLoadMultiFromFile(self):
         load_onprem_environment()
