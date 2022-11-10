@@ -142,6 +142,9 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
 #==============================================================================
 
 def __validate_url(url):
+    if "prismacloud.io" not in (url):
+        return url
+
     if len(url) >= 3:
         if 'https://' not in url:
             if url[:3] == 'app' or url[:3] == 'api':
@@ -188,6 +191,44 @@ def __get_cwp_tenant_credentials():
         pass
 
     return name, url, uname, passwd, verify
+
+def __get_config():
+    __c_print('Enter tenant/console name or any preferred identifier (optional):', color='blue')
+    name = input()
+
+    __c_print('Enter url. (SaaS EX: https://app.ca.prismacloud.io):', color='blue')
+    url = input()
+    print()
+    new_url = __validate_url(url)
+    if new_url != url:
+        __c_print('Adjusted URL:',color='yellow')
+        print(new_url)
+        print()
+
+    __c_print('Enter identity (Access Key or Username):', color='blue')
+    _id = input()
+    print()
+
+    __c_print('Enter secret (Secret Key or Password):', color='blue')
+    secret = input()
+    print()
+
+    __c_print('Certificate verification: (True/False/<path_to_.pem file>)', color='blue')
+    __c_print('Leave blank to use default value (False).', color='yellow')
+    verify = input()
+    print()
+
+    if verify == '':
+        verify = True
+    elif verify.lower() == 'true':
+        verify = True
+    elif verify.lower() == 'false':
+        verify = False
+    else:
+        pass
+    
+
+    return name, _id, secret, new_url, verify
 
 def __get_tenant_credentials():
 
@@ -400,6 +441,52 @@ def __get_credentials_from_user(num_tenants):
                 break
 
         return credentials
+
+def __get_config_from_user(num_tenants):
+        #Gets the source tenant credentials and ensures that are valid
+    credentials = []
+
+    if num_tenants != -1:
+        for i in range(num_tenants):
+            valid = False
+            while not valid:
+                __c_print('Enter credentials for the tenant', color='blue')
+                print()
+                name, _id, secret, url, verify = __get_config()
+                
+                valid = __validate_credentials(_id, secret, url, verify)
+                if valid == False:
+                    __c_print('FAILED', end=' ', color='red')
+                    print('Invalid credentials. Please re-enter your credentials')
+                    print()
+                else:
+                    credentials.append(__build_session_dict(name, _id, secret, url, verify))
+
+        return credentials
+    else:
+        while True:
+            valid = False
+            while not valid:
+                __c_print('Enter credentials for the tenant', color='blue')
+                print()
+                name, _id, secret, url, verify = __get_config()
+                
+                valid = __validate_credentials(_id, secret, url, verify)
+                if valid == False:
+                    __c_print('FAILED', end=' ', color='red')
+                    print('Invalid credentials. Please re-enter your credentials')
+                    print()
+                else:
+                    credentials.append(__build_session_dict(name, _id, secret, url, verify))
+            
+            __c_print('Would you like to add an other tenant? Y/N')
+            choice = input().lower()
+
+            if choice != 'yes' and choice != 'y':
+                break
+
+        return credentials
+
 
 def __load_uuid_yaml(file_name, logger=py_logger):
     with open(file_name, "r") as file:
@@ -830,3 +917,22 @@ def load_from_user(logger=py_logger) -> list:
             tenant_sessions.append(SaaSSessionManager(name, tenant[name]['access_key'], tenant[name]['secret_key'], tenant[name]['api_url'], verify, logger))
             
     return tenant_sessions[0]
+
+def load_config(file_path='', num_tenants=-1, logger=py_logger):
+    if file_path == '':
+        config_dir = os.path.join(os.environ['HOME'], '.prismacloud')
+        config_path = os.path.join(config_dir, 'credentials.json')
+
+        if not os.path.exists(config_dir):
+            os.mkdir(config_dir)
+
+    tenant_sessions = []
+
+    if not os.path.exists(config_path):
+
+            fp = open(config_path, 'x')
+            fp.close()
+
+
+    
+    
