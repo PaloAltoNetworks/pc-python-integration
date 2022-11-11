@@ -10,6 +10,8 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 #Local
 from ._session_base import Session
 
+import time
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
     def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify, logger: object):
@@ -30,6 +32,8 @@ class CWPSession(Session):
         self.uname = uname
         self.passwd = passwd
         self.verify = verify
+
+        self.token_time_stamp = 0
 
         self.api_url = api_url
 
@@ -71,6 +75,7 @@ class CWPSession(Session):
         res = object()
         try:
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')

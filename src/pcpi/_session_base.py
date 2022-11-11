@@ -112,6 +112,10 @@ class Session:
         u_count = 0
         while res == '' and u_count < self.unknown_error_max:
             try:
+                if time.time() - self.token_time_stamp >= 480:
+                    self.logger.warning('Session refresh timer - Generating new Token')
+                    self._api_login_wrapper()
+
                 self.logger.debug(f'{url}')
                 res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)
                 

@@ -8,6 +8,9 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 from ._session_base import Session
 from ._cspm_session import CSPMSession
 
+#Python Library
+import time
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class SaaSCWPSession(Session):
     def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger, cspm_session={}):
@@ -28,6 +31,8 @@ class SaaSCWPSession(Session):
         self.s_key = s_key
         self.api_url = api_url
         self.verify = verify
+
+        self.token_time_stamp = 0
 
         self.logger = logger
 
@@ -95,6 +100,7 @@ class SaaSCWPSession(Session):
         res = object()
         try:
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
@@ -103,4 +109,4 @@ class SaaSCWPSession(Session):
 
     def _expired_login(self) -> None:
         self.logger.warning('CSPM session expired. Generating new session.')
-        self.__cspm_login()
+        self.__cspm_login() 

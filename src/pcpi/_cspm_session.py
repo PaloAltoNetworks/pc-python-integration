@@ -7,6 +7,8 @@ requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 #Local
 from ._session_base import Session
 
+import time
+
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CSPMSession(Session):
     def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger):
@@ -26,6 +28,8 @@ class CSPMSession(Session):
         self.s_key = s_key
         self.api_url = api_url
         self.verify = verify
+
+        self.token_time_stamp = 0
 
         self.token = ''
 
@@ -63,6 +67,7 @@ class CSPMSession(Session):
         res = object()
         try:
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
