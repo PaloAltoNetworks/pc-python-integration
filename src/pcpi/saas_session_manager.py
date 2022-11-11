@@ -43,7 +43,7 @@ class SaaSSessionManager:
             return session
         else:
             self.create_cspm_session()
-            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, logger=self.logger)
+            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, logger=self.logger, cspm_session=self.cspm_session)
             self.saas_cwp_session = session
             return session
 

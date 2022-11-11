@@ -1,11 +1,13 @@
 #Standard Library
 import os
 import re
+import logging
+import json
 
 #Installed
 import yaml
 import requests
-import logging
+
 
 from urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
@@ -139,10 +141,18 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
         print()
         return False
 
+def __universal_validate_credentials(name, url, _id, secret, verify):
+    if 'prismacloud.io' in url:
+        return __validate_credentials(_id, secret, url, verify)
+    else:
+        return __validate_cwp_credentials(name, url, _id, secret, verify)
+
 #==============================================================================
 
 def __validate_url(url):
     if "prismacloud.io" not in (url):
+        if 'https://' not in url and 'http://' not in url:
+            url = 'https://' + url
         return url
 
     if len(url) >= 3:
@@ -150,7 +160,6 @@ def __validate_url(url):
             if url[:3] == 'app' or url[:3] == 'api':
                 url = 'https://' + url
             
-    
     url = url.replace('app', 'api')
 
     url = re.sub(r'prismacloud\.io\S*', 'prismacloud.io', url)
@@ -196,7 +205,7 @@ def __get_config():
     __c_print('Enter tenant/console name or any preferred identifier (optional):', color='blue')
     name = input()
 
-    __c_print('Enter url. (SaaS EX: https://app.ca.prismacloud.io):', color='blue')
+    __c_print('Enter url. (SaaS EX: https://app.ca.prismacloud.io, On-Prem EX: https://yourdomain.com):', color='blue')
     url = input()
     print()
     new_url = __validate_url(url)
@@ -213,8 +222,8 @@ def __get_config():
     secret = input()
     print()
 
-    __c_print('Certificate verification: (True/False/<path_to_.pem file>)', color='blue')
-    __c_print('Leave blank to use default value (False).', color='yellow')
+    __c_print('Certificate verification: (True/False/<path_to_.pem> file)', color='blue')
+    __c_print('Leave blank to use default value (True).', color='yellow')
     verify = input()
     print()
 
@@ -290,6 +299,16 @@ def __build_session_dict(name, a_key, s_key, url, verify):
             'api_url': url,
             'verify': verify
             }
+    }
+    return session_dict
+
+def __build_config_json(name, _id, secret, url, verify):
+    session_dict = {
+        'name': name,
+        'url': url,
+        'identity': _id,
+        'secret': secret,
+        'verify': verify
     }
     return session_dict
 
@@ -442,11 +461,11 @@ def __get_credentials_from_user(num_tenants):
 
         return credentials
 
-def __get_config_from_user(num_tenants):
+def __get_config_from_user(num_tenants, min_tenants):
         #Gets the source tenant credentials and ensures that are valid
     credentials = []
 
-    if num_tenants != -1:
+    if num_tenants != -1 and min_tenants == -1:
         for i in range(num_tenants):
             valid = False
             while not valid:
@@ -454,15 +473,36 @@ def __get_config_from_user(num_tenants):
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
-                valid = __validate_credentials(_id, secret, url, verify)
+                valid = __universal_validate_credentials(name, _id, secret, url, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(name, _id, secret, url, verify))
-
-        return credentials
+                    credentials.append(__build_config_json(name, _id, secret, url, verify))
+    elif num_tenants == -1 and min_tenants != -1:
+        tenant_count = 0
+        while True:
+            valid = False
+            while not valid:
+                __c_print('Enter credentials for the tenant', color='blue')
+                print()
+                name, _id, secret, url, verify = __get_config()
+                
+                valid = __universal_validate_credentials(name, _id, secret, url, verify)
+                if valid == False:
+                    __c_print('FAILED', end=' ', color='red')
+                    print('Invalid credentials. Please re-enter your credentials')
+                    print()
+                else:
+                    credentials.append(__build_config_json(name, _id, secret, url, verify))
+                    tenant_count +=1
+            
+            if tenant_count >= min_tenants:
+                __c_print('Would you like to add an other tenant? Y/N')
+                choice = input().lower()
+                if choice != 'yes' and choice != 'y':
+                    break
     else:
         while True:
             valid = False
@@ -471,13 +511,13 @@ def __get_config_from_user(num_tenants):
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
-                valid = __validate_credentials(_id, secret, url, verify)
+                valid = __universal_validate_credentials(name, _id, secret, url, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(name, _id, secret, url, verify))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -485,7 +525,7 @@ def __get_config_from_user(num_tenants):
             if choice != 'yes' and choice != 'y':
                 break
 
-        return credentials
+    return credentials
 
 
 def __load_uuid_yaml(file_name, logger=py_logger):
@@ -918,21 +958,32 @@ def load_from_user(logger=py_logger) -> list:
             
     return tenant_sessions[0]
 
-def load_config(file_path='', num_tenants=-1, logger=py_logger):
+def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
+    if num_tenants != -1 and min_tenants != -1:
+        logger.error('ERROR: Incompatible options. Exiting...')
+        exit()
+
     if file_path == '':
         config_dir = os.path.join(os.environ['HOME'], '.prismacloud')
         config_path = os.path.join(config_dir, 'credentials.json')
-
         if not os.path.exists(config_dir):
             os.mkdir(config_dir)
 
     tenant_sessions = []
 
     if not os.path.exists(config_path):
+        with open(config_path, 'w') as outfile:
+            config = __get_config_from_user(num_tenants, min_tenants)
+            json.dump(config, outfile)
 
-            fp = open(config_path, 'x')
-            fp.close()
+    config_data = {}
+    with open(config_path, 'r') as infile:
+        config_data = json.load(infile)
 
-
+    for blob in config_data:
+        if 'prismacloud.io' in blob['url']:
+            tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], blob['verify'], logger=logger))
+        else:
+            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], blob['verify'], logger=logger))
     
-    
+    return tenant_sessions
