@@ -22,6 +22,7 @@ class Session:
         self.expired_code = 401
         self.retry_timer = 0
         self.retry_timer_max = 32
+        self.token_time = 480
 
         self.unknown_error_max = 5
 
@@ -95,6 +96,67 @@ class Session:
                 self.logger.warning('2) Ensure API base URL is correct.')
                 time.sleep(1)
 
+    def _api_refresh_wrapper(self):
+        res = ''
+        u_count = 0
+        while res == '' and u_count < self.unknown_error_max:
+            try:
+                res = self._api_refresh()
+
+                retries = 0
+                while res.status_code in self.retry_statuses and retries < self.retries:
+                    if res.status_code in self.retry_delay_statuses:
+                        self.logger.warning('Increasing wait time.')
+                        #Increase timer when ever encounter to slow script execution.
+                        if self.retry_timer == 0:
+                            self.retry_timer = 1
+                        else:
+                            self.retry_timer = self.retry_timer*2
+                            if self.retry_timer >= self.retry_timer_max:
+                                self.retry_timer = self.retry_timer_max
+
+                        time.sleep(self.retry_timer)
+
+                    elif res.status_code == self.expired_code:
+                        self._expired_login()
+                    else:
+                        self.logger.error('FAILED')
+                        self.logger.error('ERROR Refreshing Token.')
+                        self.logger.warning('RESPONSE:')
+                        self.logger.info(res)
+                        self.logger.warning('RESPONSE URL:')
+                        self.logger.info(res.url)
+                        self.logger.warning('RESPONSE TEXT:')
+                        self.logger.info(res.text)
+                    
+                    res = self._api_refresh()
+
+                    retries +=1
+                
+                if retries == self.retries:
+                    self.logger.error('ERROR. Max retires exceeded on JWT refresh. Exiting...')
+                    exit()
+
+                try:
+                    self.logger.success('SUCCESS')
+                except:
+                    self.logger.info('SUCCESS')
+
+                return
+
+            except KeyboardInterrupt:
+                self.logger.error('Keyboard Interrupt. Exiting...')
+                exit()
+            except Exception as e:
+                self.logger.error(e)
+                u_count += 1
+                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying {u_count} of {self.unknown_error_max}')
+                self.logger.warning('Steps to troubleshoot: ')
+                self.logger.warning('1) Disable any VPNs.')
+                self.logger.warning('2) Ensure API base URL is correct.')
+                time.sleep(1)
+
+
 #==============================================================================
     def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, redlock_ignore: list=None, status_ignore: list=[]):
         """
@@ -112,9 +174,9 @@ class Session:
         u_count = 0
         while res == '' and u_count < self.unknown_error_max:
             try:
-                if time.time() - self.token_time_stamp >= 480:
-                    self.logger.warning('Session refresh timer - Generating new Token')
-                    self._api_login_wrapper()
+                if time.time() - self.token_time_stamp >= self.token_time:
+                    self.logger.warning('Session Refresh Timer - Generating new Token')
+                    self._api_refresh_wrapper()
 
                 self.logger.debug(f'{url}')
                 res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)

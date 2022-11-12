@@ -78,3 +78,16 @@ class CSPMSession(Session):
         self.logger.error('FAILED')
         self.logger.warning('Invalid Login Credentials. JWT not generated. Exiting...')
         exit()
+
+    def _api_refresh(self) -> None:
+            self.logger.debug('API - Refreshing SaaS session token.')
+
+            res = object()
+            try:
+                res = requests.request("GET", self.api_url + '/auth_token/extend', headers=self.headers, verify=self.verify)
+                self.token_time_stamp = time.time()
+            except:
+                self.logger.error('Failed to connect to API.')
+                self.logger.warning('Make sure any offending VPNs are disabled.')
+
+            return res

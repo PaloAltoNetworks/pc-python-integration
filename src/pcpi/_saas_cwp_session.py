@@ -109,4 +109,17 @@ class SaaSCWPSession(Session):
 
     def _expired_login(self) -> None:
         self.logger.warning('CSPM session expired. Generating new session.')
-        self.__cspm_login() 
+        self.__cspm_login()
+
+    def _api_refresh(self) -> None:
+        self.logger.debug('API - Refreshing SaaS session token.')
+
+        res = object()
+        try:
+            res = self.cspm_session.request("GET", '/auth_token/extend', verify=self.verify)
+            self.token_time_stamp = time.time()
+        except:
+            self.logger.error('Failed to connect to API.')
+            self.logger.warning('Make sure any offending VPNs are disabled.')
+
+        return res
