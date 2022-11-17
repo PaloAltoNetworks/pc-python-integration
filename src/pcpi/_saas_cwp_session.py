@@ -116,7 +116,7 @@ class SaaSCWPSession(Session):
 
         res = object()
         try:
-            res = self.cspm_session.request("GET", '/auth_token/extend', verify=self.verify)
+            res = self.cspm_session._api_refresh()
             self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
