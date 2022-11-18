@@ -5,7 +5,6 @@ import time
 import requests
 
 from urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 class Session:
     def __init__(self,logger):
@@ -24,15 +23,20 @@ class Session:
         self.retry_timer_max = 32
         self.token_time = 480
 
+        self.empty_res = ''
+
         self.unknown_error_max = 5
 
         self.logger = logger
 
 #==============================================================================
     def _api_login_wrapper(self):
-        res = ''
+        if self.verify == False:
+            requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+
+        res = self.empty_res
         u_count = 0
-        while res == '' and u_count < self.unknown_error_max:
+        while res == self.empty_res and u_count < self.unknown_error_max:
             try:
                 res = self._api_login()
 
@@ -90,16 +94,16 @@ class Session:
             except Exception as e:
                 self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - API login. Retrying {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API login. Retrying... {u_count} of {self.unknown_error_max}')
                 self.logger.warning('Steps to troubleshoot: ')
                 self.logger.warning('1) Disable any VPNs.')
                 self.logger.warning('2) Ensure API base URL is correct.')
                 time.sleep(1)
 
     def _api_refresh_wrapper(self):
-        res = ''
+        res = self.empty_res
         u_count = 0
-        while res == '' and u_count < self.unknown_error_max:
+        while res == self.empty_res and u_count < self.unknown_error_max:
             try:
                 res = self._api_refresh()
 
@@ -150,7 +154,7 @@ class Session:
             except Exception as e:
                 self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying... {u_count} of {self.unknown_error_max}')
                 self.logger.warning('Steps to troubleshoot: ')
                 self.logger.warning('1) Disable any VPNs.')
                 self.logger.warning('2) Ensure API base URL is correct.')
@@ -170,9 +174,9 @@ class Session:
         Returns:
         Respose from API call.
         """
-        res = ''
+        res = self.empty_res
         u_count = 0
-        while res == '' and u_count < self.unknown_error_max:
+        while res == self.empty_res and u_count < self.unknown_error_max:
             try:
                 if time.time() - self.token_time_stamp >= self.token_time:
                     self.logger.warning('Session Refresh Timer - Generating new Token')
@@ -268,9 +272,11 @@ class Session:
             except Exception as e:
                 self.logger.error(e)
                 u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying {u_count} of {self.unknown_error_max}')
-                time.sleep(1)
-            
+                if res == self.empty_res:
+                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying... {u_count} of {self.unknown_error_max}')
+                    time.sleep(1)
+                else:
+                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Continuing... {u_count} of {self.unknown_error_max}')
 
     #==============================================================================
 
@@ -297,8 +303,8 @@ class Session:
 
     def __request_wrapper(self, method, url, headers, json, data, params, verify):
         u_count = 0
-        r = ''
-        while r == '' and u_count < self.retries:
+        r = self.empty_res
+        while r == self.empty_res and u_count < self.retries:
             u_count += 1
             try:
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
