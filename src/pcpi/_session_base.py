@@ -162,7 +162,7 @@ class Session:
 
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, redlock_ignore: list=None, status_ignore: list=[]):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -183,7 +183,7 @@ class Session:
                     self._api_refresh_wrapper()
 
                 self.logger.debug(f'{url}')
-                res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)
+                res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     try:
@@ -217,7 +217,7 @@ class Session:
                     self.logger.warning(f'Retrying request. Code {res.status_code}.')
                     self.logger.debug(f'{url}')
 
-                    res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify)
+                    res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
                     retries += 1
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
@@ -280,7 +280,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, redlock_ignore: list=None, status_ignore: list=[]):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -298,10 +298,15 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
 
-    def __request_wrapper(self, method, url, headers, json, data, params, verify):
+    def __request_wrapper(self, method, url, headers, json, data, params, verify, acceptCsv):
+        if acceptCsv == True: #CSPM Support Only
+            headers.update({
+                'Accept': 'text/csv'
+            })
+
         u_count = 0
         r = self.empty_res
         while r == self.empty_res and u_count < self.retries:
