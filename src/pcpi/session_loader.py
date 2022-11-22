@@ -981,7 +981,7 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
         config_data = json.load(infile)
 
     for blob in config_data:
-        if 'prismacloud.io' in blob['url']:
+        if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
             tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], blob['verify'], logger=logger))
         else:
             tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], blob['verify'], logger=logger))
