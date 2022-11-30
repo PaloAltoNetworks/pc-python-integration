@@ -33,7 +33,14 @@ Windows
 2) Open the file and add these lines:
 ```python
 from pcpi import session_loader
-session_man = session_loader.load_from_file()
+#load_config will create a config file if one does not exist
+session_managers = session_loader.load_config()
+#load_config returns a list of session_manager objects. If only one is needed, index the list at position 0 to get the first and only session_manager.
+session_man = session_managers[0]
+#If you supplied credentials for Prisma Cloud SaaS, you can create a CSPM Session Or a CWP Session.
+#create_cspm_session(), create_cwp_session()
+#If you supplied credentials for Prisma Cloud Self Hosted/On-prem, you will only be able to create CWP sessions.
+#create_cwp_session()
 cspm_session = session_man.create_cspm_session()
 
 res = cspm_session.request('GET', '/cloud')
