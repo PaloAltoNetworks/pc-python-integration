@@ -142,7 +142,7 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
         return False
 
 def __universal_validate_credentials(name, url, _id, secret, verify):
-    if 'prismacloud.io' in url:
+    if 'prismacloud.io' in url or 'prismacloud.cn' in url:
         return __validate_credentials(_id, secret, url, verify)
     else:
         return __validate_cwp_credentials(name, url, _id, secret, verify)
@@ -473,7 +473,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
-                valid = __universal_validate_credentials(name, _id, secret, url, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
@@ -489,7 +489,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
-                valid = __universal_validate_credentials(name, _id, secret, url, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
@@ -511,7 +511,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
-                valid = __universal_validate_credentials(name, _id, secret, url, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
@@ -968,6 +968,8 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
         config_path = os.path.join(config_dir, 'credentials.json')
         if not os.path.exists(config_dir):
             os.mkdir(config_dir)
+    else:
+        config_path = file_path
 
     tenant_sessions = []
 
@@ -985,5 +987,5 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
             tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], blob['verify'], logger=logger))
         else:
             tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], blob['verify'], logger=logger))
-    
+
     return tenant_sessions

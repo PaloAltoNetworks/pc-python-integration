@@ -67,6 +67,38 @@ def load_onprem_environment():
 #UNIT TESTS====================================================================
 
 class credentialFileTests(TestCase):
+    def testLoadConfigBasic(self):
+        load_environment()
+        from src.pcpi import session_loader
+        from src.pcpi import saas_session_manager
+        name = os.environ['PC_TENANT_NAME0']
+        api_url = os.environ['PC_TENANT_API0']
+        a_key = os.environ['PC_TENANT_A_KEY0']
+        s_key = os.environ['PC_TENANT_S_KEY0']
+        verify = os.environ['PC_TENANT_VERIFY0']
+
+        result = session_loader.load_config()
+        self.assertEqual([result[0].tenant], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).tenant])
+        self.assertEqual([result[0].a_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key])
+        self.assertEqual([result[0].s_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key])
+        self.assertEqual([result[0].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url])
+
+    def testLoadConfigFilePath(self):
+        load_environment()
+        from src.pcpi import session_loader
+        from src.pcpi import saas_session_manager
+        name = os.environ['PC_TENANT_NAME0']
+        api_url = os.environ['PC_TENANT_API0']
+        a_key = os.environ['PC_TENANT_A_KEY0']
+        s_key = os.environ['PC_TENANT_S_KEY0']
+        verify = os.environ['PC_TENANT_VERIFY0']
+
+        result = session_loader.load_config(file_path='creds.json')
+        self.assertEqual([result[0].tenant], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).tenant])
+        self.assertEqual([result[0].a_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).a_key])
+        self.assertEqual([result[0].s_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key])
+        self.assertEqual([result[0].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url])
+
     def testLoadMinFromFile(self):
         load_environment()
         from src.pcpi import session_loader
