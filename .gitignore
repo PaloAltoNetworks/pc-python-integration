@@ -2,10 +2,15 @@
 *.yml
 *.yaml
 
+export_gp_pem.py
+
 *.json
 
 test_*
 test.*
+
+globalprotect*
+*cert*
 
 # VSCode
 .vscode/*
