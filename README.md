@@ -94,11 +94,16 @@ session_loader.onprem_load_from_user()
 
 #-- SESSION LOADER ARGUMENTS --
 #Session loader arguments are all optional
-#file_path -- Path to credentials file. File will be created at the path specified. Exclude argument to use default path.
-#num_tenants -- Number of tenant configurations that will be included in the config JSON file. Only applies when a config file is being created.
-#min_tenants -- Minimum number of tenants to be included in the config file. User setting up config file will be promted to continue after minimum
+#file_path -- Path to credentials file. File will be created at the path specified. 
+# Exclude argument to use default path.
+#num_tenants -- Number of tenant configurations that will be included in the config JSON file. 
+# Only applies when a config file is being created.
+#min_tenants -- Minimum number of tenants to be included in the config file. 
+# User setting up config file will be promted to continue after minimum
 # number of tenants have been reached
-#logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. Can also use a loguru logger #object
+#You can not use num_tenants and min_tenants at the same time. Only include one or the other.
+#logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. 
+# Can also use a loguru logger object
 session_loader.load_config(file_path='', num_tenants=1, min_tenants=1, logger=logger)
 
 #-- SESSION MANAGERS --
