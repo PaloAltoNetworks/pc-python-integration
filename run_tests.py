@@ -121,7 +121,6 @@ class credentialFileTests(TestCase):
         self.assertEqual([result[0].s_key, result[1].s_key], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).s_key, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).s_key])
         self.assertEqual([result[0].api_url, result[1].api_url], [saas_session_manager.SaaSSessionManager(name, a_key, s_key, api_url, verify, py_logger).api_url, saas_session_manager.SaaSSessionManager(name2, a_key2, s_key2, api_url2, verify2, py_logger).api_url])
 
-
     def testLoadMultiFromFile(self):
         load_environment()
         from src.pcpi import session_loader
@@ -251,5 +250,21 @@ class apiRequestTest(TestCase):
 
         self.assertEqual(res.json(), res1.json())
 
+    def testCertBypass(self):
+        from src.pcpi import session_loader
+        manager = session_loader.load_from_file()
+        cspm_session = manager.create_cspm_session()
+        res = cspm_session.request('GET', '/cloud', verify=False)
+
+        self.assertEqual(res.status_code, 200)
+
+    def testCertOverwrite(self):
+        from src.pcpi import session_loader
+        manager = session_loader.load_from_file()
+        cspm_session = manager.create_cspm_session()
+        res = cspm_session.request('GET', '/cloud', verify='globalprotect_certifi.txt')
+
+        self.assertEqual(res.status_code, 200)
+        
 if __name__ == '__main__':
     unittest.main()
