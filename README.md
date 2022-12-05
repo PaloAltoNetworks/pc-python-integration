@@ -33,7 +33,7 @@ Windows
 2) Open the file and add these lines:
 ```python
 from pcpi import session_loader
-#load_config will create a config file if one does not exist
+#load_config will create a config file if one does not exist. Default path is ~./prismacloud/credentails.json
 session_managers = session_loader.load_config()
 #load_config returns a list of session_manager objects. If only one is needed, index the list at position 0 
 # to get the first and only session_manager.
