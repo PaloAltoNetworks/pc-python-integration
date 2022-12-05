@@ -989,3 +989,71 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
             tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], blob['verify'], logger=logger))
 
     return tenant_sessions
+
+def load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger):
+    if num_tenants != -1 and min_tenants != -1:
+        logger.error('ERROR: Incompatible options. Exiting...')
+        exit()
+
+    config = __get_config_from_user(num_tenants, min_tenants)
+
+    tenant_sessions = []
+
+    for tenant in config:
+        if 'prismacloud.io' in tenant['url'] or 'prismacloud.cn' in tenant['url']:
+            tenant_sessions.append(SaaSSessionManager(tenant['name'], tenant['identity'], tenant['secret'], tenant['url'], tenant['verify'], logger=logger))
+        else:
+            tenant_sessions.append(CWPSessionManager(tenant['name'], tenant['url'], tenant['identity'], tenant['secret'], tenant['verify'], logger=logger))
+
+    return tenant_sessions
+
+def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY',  logger=py_logger):
+    error_exit = False
+
+    name = 'Tenant'
+    try:
+        name = os.environ[prisma_name]
+    except:
+        logger.warning(f'Missing \'{prisma_name}\' environment variable. Using default name.')
+    
+    api_url = ''
+    api = None
+    try:
+        api_url = os.environ[api_url_name]
+        api = __validate_url(api_url)
+    except:
+        logger.error(f'Missing \'{api_url_name}\' environment variable.')
+        error_exit = True
+
+    a_key = None
+    try:
+        a_key = os.environ[identifier_name]
+    except:
+        logger.error(f'Missing \'{identifier_name}\' environment variable.')
+        error_exit = True
+
+    s_key = None
+    try:
+        s_key = os.environ[secret_name]
+    except:
+        logger.error(f'Missing \'{secret_name}\' environment variable.')
+        error_exit = True
+
+    verify = True
+    try:
+        verify = os.environ[verify_name]
+        if verify.lower() == 'false':
+            verify = False
+        if verify.lower() == 'true':
+            verify = True
+    except:
+        logger.warning(f'Missing \'{verify_name}\' environment variable. Using default value...')
+
+    if error_exit:
+        logger.info('Missing required environment variables. Exiting...')
+        exit()
+
+    if 'prismacloud.io' in api or 'prismacloud.cn' in api:
+        return SaaSSessionManager(name, a_key, s_key, api, verify, logger=logger)
+    else:
+        return CWPSessionManager(name, api, a_key, s_key, verify, logger=logger)
