@@ -318,12 +318,32 @@ print(res.json())
 from pcpi import session_loader
 import loguru
 
+#Check out loguru docs for details on configuration options.
+
 session_managers = session_loader.load_config(logger=loguru.logger)
 session_manager = session_managers[0]
 cspm_session = session_manager.create_cspm_session()
 
 res = cspm_session.request('GET', '/cloud')
 print(res.json())
+
+#Custom Setup
+#If you wish to change the amount of logging output seen in the terminal, or output logs to a file,
+# you can overwrite the default logger with a customer pylogger object or a customer loguru object.
+from pcpi import session_loader
+import logging
+
+logging.basicConfig()
+py_logger = logging.getLogger("pcpi")
+py_logger.setLevel(100) #turns off logging since no default logs have a level of over 50
+
+session_managers = session_loader.load_config(logger=py_logger)
+session_manager = session_managers[0]
+cspm_session = session_manager.create_cspm_session()
+
+res = cspm_session.request('GET', '/cloud')
+print(res.json())
+
 ```
 
 # Function Reference
