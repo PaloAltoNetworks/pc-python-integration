@@ -148,7 +148,7 @@ onprem_cwp_session = my_onprem_session_manager.create_cwp_session()
 
 #-- SESSION FUNCTION --
 #Session objects are used to make API requests
-cspm_session.request('', '', json={}, params={})
+session.request('', '', json={}, params={})
 
 #-- SESSION REQUEST ARGUMENTS --
 #method - required - the http verb used in the request
@@ -176,13 +176,15 @@ loguru_logger = logger
 from pcpi import session_loader
 
 #--DEFAULT OPTION--
-#Defaults to a file named 'tenant_credentials.yml'
-session_manager_default = session_loader.load_from_file(logger=loguru_logger)
+#Defaults to a file named '~./prismacloud/credentials.json'
+session_manager_default = session_loader.load_config(logger=loguru_logger)
 
 #--CUSTOM OPTION--
-#File must be a yaml (.yml) file. 
+#File must be a json file 
 #If a file that does not exist is specified, the script will build one. Only creates end file, not directory structure. That setup is up to you.
-session_manager = session_loader.load_from_file(file_path='~/secrets/my_secrets.yml')
+#If using default file path, load_config() will create the ~/.prismacloud/credentials.json file structure.
+session_managers = session_loader.load_config(file_path='~/secrets/my_secrets.json')
+session_manager = session_managers[0]
 
 cspm_session = session_manager.create_cspm_session()
 cwp_session = session_manager.create_cwp_session()
@@ -192,30 +194,19 @@ response = cspm_session.request('GET', '/cloud')
 print(response.json())
 ```
 
-For SaaS CSPM and CWP
+For SaaS CSPM and CWP and Self Hosted/On-Prem CWP
 
 ```python
 from pcpi import session_loader
 
-session_manager = session_loader.load_from_env()
+session_manager = session_loader.load_config_env() #only returns a single session_manager object
 ```
 
 ```python
 from pcpi import session_loader
 
-session_manager = session_loader.load_from_user()
-```
-
-For CWP Self Hosted
-
-```python
-from pcpi import session_loader
-
-session_manager = session_loader.onprem_load_from_file()
-session_manager = session_loader.onprem_load_from_env()
-session_manager = session_loader.onprem_load_from_user()
-
-session_manager.create_cwp_session()
+session_managers = session_loader.load_config_user()
+session_manager = session_managers[0]
 ```
 
 ## Session Managers
@@ -275,8 +266,9 @@ loguru_logger = logger
 
 from pcpi import session_loader
 
-#Defaults to a file named 'tenant_credentials.yml'
-session_manager_default = session_loader.load_from_file(logger=loguru_logger)
+#Default config file will be created at '~/.prismacloud/credentials.json'
+session_managers = session_loader.load_config(logger=loguru_logger)
+session_manager = session_managers[0]
 
 cspm_session = session_manager.create_cspm_session()
 
@@ -313,7 +305,9 @@ Loguru is strongly recommended but it is an additional dependency that you may n
 #Minimum setup
 from pcpi import session_loader
 
-session_manager = session.load_from_file()
+session_managers = session_loader.load_config()
+session_manager = session_managers[0]
+
 cspm_session = session_manager.create_cspm_session()
 
 res = cspm_session.request('GET', '/cloud')
@@ -323,7 +317,8 @@ print(res.json())
 from pcpi import session_loader
 import loguru
 
-session_manager = session.load_from_file(logger=loguru.logger)
+session_managers = session_loader.load_config(logger=loguru.logger)
+session_manager = session_managers[0]
 cspm_session = session_manager.create_cspm_session()
 
 res = cspm_session.request('GET', '/cloud')
@@ -333,6 +328,19 @@ print(res.json())
 # Function Reference
 
 # Announcements
+
+## Stable release 12/6/2022
+**News**
+JSON files are replacing yaml files for credential management.
+Credential files now cross compatible with [Prisma Cloud API Python](https://github.com/PaloAltoNetworks/prismacloud-api-python).
+- Session Loaders that handle credential management for you to jump start your script development
+- - load_config(), load_config_env(), and load_config_user() introduced to replace other session managers
+- - JSON files now used instead of yaml
+- - Default Credential path changes to ~/.prismacloud/credentials.json
+- - No longer requires separate credential files for SaaS and On Prem
+
+**Patch Notes**
+- Various bug fixes and stability improvements
 
 ## Stable release 8/11/2022
 **News**
