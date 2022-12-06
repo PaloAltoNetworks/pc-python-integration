@@ -305,6 +305,7 @@ Loguru is strongly recommended but it is an additional dependency that you may n
 #Minimum setup
 from pcpi import session_loader
 
+#Default pylogger is used if none is specified
 session_managers = session_loader.load_config()
 session_manager = session_managers[0]
 
