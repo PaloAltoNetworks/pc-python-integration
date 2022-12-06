@@ -27,6 +27,9 @@ Windows
 - ```pip3 install pcpi```
 - ```python3 -m pip install pcpi```
 
+To update an existing installation, ad the '--upgrade' flag to the pip command. EX:
+- ```pip3 install --upgrade pcpi```
+
 # Quick Start
 
 1) Create a file with a text editor of your choice (I recommend VS Code). Name this file **script.py**
