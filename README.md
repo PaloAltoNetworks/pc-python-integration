@@ -37,6 +37,9 @@ from pcpi import session_loader
 session_managers = session_loader.load_config()
 #load_config returns a list of session_manager objects. If only one is needed, index the list at position 0 
 # to get the first and only session_manager.
+#load_config() will create a credential file for you if the default path or the specified path does not exist.
+#load_config() accepts credentials for SaaS and Self hosted Prisma Cloud and smartly returns either a SaaS session manager or
+# an On-Prem session manager.
 session_man = session_managers[0]
 #If you supplied credentials for Prisma Cloud SaaS, you can create a CSPM Session Or a CWP Session.
 #create_cspm_session(), create_cwp_session()
@@ -86,36 +89,62 @@ session_loader = pcpi.session_loader
 
 #-- SESSION LOADER FUNCTIONS --
 session_loader.load_config()
+session_loader.load_config_env()
+session_loader.load_config_user()
 
-session_loader.load_from_env()
-session_loader.load_from_user()
-session_loader.onprem_load_from_env()
-session_loader.onprem_load_from_user()
+# Each session loader accepts credentials for SaaS and Self hosted Prisma Cloud and smartly returns either a SaaS session manager or
+# an On-Prem session manager.
 
 #-- SESSION LOADER ARGUMENTS --
-#Session loader arguments are all optional
+#--Session loader arguments are all optional--
+
+# load_config()
 #file_path -- Path to credentials file. File will be created at the path specified. 
 # Exclude argument to use default path.
 #num_tenants -- Number of tenant configurations that will be included in the config JSON file. 
 # Only applies when a config file is being created.
 #min_tenants -- Minimum number of tenants to be included in the config file. 
-# User setting up config file will be promted to continue after minimum
+# User setting up config file will be prompted to continue after minimum
 # number of tenants have been reached
 #You can not use num_tenants and min_tenants at the same time. Only include one or the other.
 #logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. 
 # Can also use a loguru logger object
-session_loader.load_config(file_path='', num_tenants=1, min_tenants=1, logger=logger)
+session_loader.load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=logger) # returns session manager list
+
+# load_config_user()
+#num_tenants -- Number of tenant configurations that will be included in the config JSON file. 
+# Only applies when a config file is being created.
+#min_tenants -- Minimum number of tenants to be included in the config file. 
+# User setting up config file will be prompted to continue after minimum
+# number of tenants have been reached
+#You can not use num_tenants and min_tenants at the same time. Only include one or the other.
+#logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. 
+# Can also use a loguru logger object
+load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger) # returns session manager list
+
+# load_config_env()
+#prisma_name='PRISMA_PCPI_NAME' -- overwrites the default env var name for the 'name' Prisma Credential
+#identifier_name='PRISMA_PCPI_ID' -- overwrites the default env var name for the 'ID' Prisma Credential
+#secret_name='PRISMA_PCPI_SECRET' -- overwrites the default env var name for the 'secret' Prisma Credential 
+#api_url_name='PRISMA_PCPI_URL' -- overwrites the default env var name for the 'api_url' Prisma Credential
+#verify_name='PRISMA_PCPI_VERIFY', -- overwrites the default env var name for the 'verify' Prisma Credential
+#logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. 
+# Can also use a loguru logger object
+load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', 
+                api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY',  logger=py_logger) # returns single session manager
 
 #-- SESSION MANAGERS --
-#Session loader returns a session manager object
-session_manager = session_loader.load_from_env()
-onprem_session_manager = session_loader.onprem_load_from_env()
+#Session loader returns a list of session managers
+session_managers = session_loader.load_config() 
+#load_config() returns either a SaaS session manager or On-Prem session manager based on credentials used, namely the api url.
+my_session_manager = session_managers[0]
+my_onprem_session_manager = session_managers[1]
 
 #Session managers return session objects
 #-- SESSION MANAGER FUNCTIONS --
-cspm_session = session_manager.create_cspm_session()
-cwp_session = session_manager.create_cwp_session()
-onprem_cwp_session = onprem_session_manager.create_cwp_session()
+cspm_session = my_session_manager.create_cspm_session()
+cwp_session = my_session_manager.create_cwp_session()
+onprem_cwp_session = my_onprem_session_manager.create_cwp_session()
 
 #-- SESSION FUNCTION --
 #Session objects are used to make API requests
