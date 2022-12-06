@@ -164,7 +164,7 @@ session.request('', '', json={}, params={})
 
 The session loader is a module that has functions for loading Prisma Cloud credentials from a file, environment variables, or from the user into your program. This ensures you get your script up and running as quickly as possible.
 
-The session_loader function returns a session manager that is ready to be used to create a CSPM, CWP, or an On-Prem CWP session. The session manager is used to create the Prisma Cloud session object that you will be using to make API calls.
+The session loader module has functions that return a session manager or session manager list that is used to create a CSPM, CWP, or an On-Prem CWP session. The session manager is used to create the Prisma Cloud session object that you will be using to make API calls.
 
 **Examples**
 
@@ -290,7 +290,7 @@ payload = {
 
 query_string = {"skipStatusChecks":1}
 
-response = cspm_session.request('POST', '/cloud/aws', json=payload, params=query_string)
+response = cspm_session.request('POST', '/cloud/aws', json=payload, params=query_string, verify='path_to_cert.pem')
 print(response.status_code)
 ```
 
@@ -333,7 +333,7 @@ print(res.json())
 **News**
 JSON files are replacing yaml files for credential management.
 Credential files now cross compatible with [Prisma Cloud API Python](https://github.com/PaloAltoNetworks/prismacloud-api-python).
-- Session Loaders that handle credential management for you to jump start your script development
+- New Session Loaders that handle credential management for you
 - - load_config(), load_config_env(), and load_config_user() introduced to replace other session managers
 - - JSON files now used instead of yaml
 - - Default Credential path changes to ~/.prismacloud/credentials.json
