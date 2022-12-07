@@ -151,14 +151,15 @@ onprem_cwp_session = my_onprem_session_manager.create_cwp_session()
 
 #-- SESSION FUNCTION --
 #Session objects are used to make API requests
-session.request('', '', json={}, params={})
+cspm_session.request('', '', json={}, params={}, verify=True)
 
 #-- SESSION REQUEST ARGUMENTS --
-#method - required - the http verb used in the request
-#endpoint_url - required - the path of the API endpoint
+#method - position 1 - required - the http verb used in the request
+#endpoint_url - position 2 - required - the path of the API endpoint
 #json - optional - the payload for the API call - converts python dictionaries into json automatically
 #data - optional - payload alterative that does not convert python dictionaries into json
 #params - optional - query string parameters can be included as a python dictionary
+#verify - optional - True, False, or path to certificate file. Disables or overwrites HTTPS Certificate verification.
 ```
 
 # Prisma Cloud Python Integration Documentation and Examples
