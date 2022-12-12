@@ -86,6 +86,7 @@ class Session:
                 except:
                     self.logger.info('SUCCESS')
 
+                self.u_count = 1
                 return token
 
             except KeyboardInterrupt:
@@ -145,6 +146,8 @@ class Session:
                     self.logger.success('SUCCESS')
                 except:
                     self.logger.info('SUCCESS')
+
+                self.u_count = 1
 
                 return
 
@@ -264,6 +267,7 @@ class Session:
                     for json_data in res.json():
                         self.logger.info(json_data)
 
+                self.u_count = 1
                 return res
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
@@ -313,6 +317,7 @@ class Session:
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+                self.u_count = 1
                 return r
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
@@ -323,6 +328,4 @@ class Session:
                 time.sleep(2)
                 self.u_count += 1
 
-            
-
-        return requests.request(method, url, headers=headers, json=json, data=data, params=params)
+        return requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
