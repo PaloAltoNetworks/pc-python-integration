@@ -25,6 +25,7 @@ class Session:
 
         self.empty_res = ''
 
+        self.u_count = 1
         self.unknown_error_max = 5
 
         self.logger = logger
@@ -35,8 +36,7 @@ class Session:
             requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
         res = self.empty_res
-        u_count = 0
-        while res == self.empty_res and u_count < self.unknown_error_max:
+        while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 res = self._api_login()
 
@@ -93,8 +93,8 @@ class Session:
                 exit()
             except Exception as e:
                 self.logger.error(e)
-                u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - API login. Retrying... {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API login. Retrying... {self.u_count} of {self.unknown_error_max}')
+                self.u_count += 1
                 self.logger.warning('Steps to troubleshoot: ')
                 self.logger.warning('1) Disable any VPNs.')
                 self.logger.warning('2) Ensure API base URL is correct.')
@@ -102,8 +102,8 @@ class Session:
 
     def _api_refresh_wrapper(self):
         res = self.empty_res
-        u_count = 0
-        while res == self.empty_res and u_count < self.unknown_error_max:
+
+        while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 res = self._api_refresh()
 
@@ -153,8 +153,8 @@ class Session:
                 exit()
             except Exception as e:
                 self.logger.error(e)
-                u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying... {u_count} of {self.unknown_error_max}')
+                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying... {self.u_count} of {self.unknown_error_max}')
+                self.u_count += 1
                 self.logger.warning('Steps to troubleshoot: ')
                 self.logger.warning('1) Disable any VPNs.')
                 self.logger.warning('2) Ensure API base URL is correct.')
@@ -175,8 +175,7 @@ class Session:
         Respose from API call.
         """
         res = self.empty_res
-        u_count = 0
-        while res == self.empty_res and u_count < self.unknown_error_max:
+        while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 if time.time() - self.token_time_stamp >= self.token_time:
                     self.logger.warning('Session Refresh Timer - Generating new Token')
@@ -200,7 +199,7 @@ class Session:
                         if self.retry_timer > 0:
                             time.sleep(self.retry_timer)
 
-                        self.logger.warning('Increaseing wait time.')
+                        self.logger.warning('Increasing wait time.')
                         #Increase timer when ever wait status encounted to slow script execution.
                         if self.retry_timer == 0:
                             self.retry_timer = 1
@@ -271,21 +270,24 @@ class Session:
                 exit()
             except Exception as e:
                 self.logger.error(e)
-                u_count += 1
                 if res == self.empty_res:
-                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying... {u_count} of {self.unknown_error_max}')
-                    time.sleep(1)
+                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying... {self.u_count} of {self.unknown_error_max}')
+                    time.sleep(2)
                 else:
-                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Continuing... {u_count} of {self.unknown_error_max}')
+                    self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Continuing... {self.u_count} of {self.unknown_error_max}')
+                self.u_count += 1
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
         headers are supplied by the session manager.
         '''
+        if verify == None:
+            verify = self.verify
+
         #Validate method
         method = method.upper()
         if method not in ['POST', 'PUT', 'GET', 'OPTIONS', 'DELETE', 'PATCH']:
@@ -307,10 +309,8 @@ class Session:
                 'Accept': 'text/csv'
             })
 
-        u_count = 0
         r = self.empty_res
-        while r == self.empty_res and u_count < self.retries:
-            u_count += 1
+        while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
                 return r
@@ -319,9 +319,9 @@ class Session:
                 exit()
             except Exception as e:
                 self.logger.error(e)
-                u_count += 1
-                self.logger.error(f'UNKNOWN ERROR - Request Wrapper. Retrying {u_count} of {self.unknown_error_max}')
-                time.sleep(1)
+                self.logger.error(f'UNKNOWN ERROR - Request Wrapper. Retrying {self.u_count} of {self.unknown_error_max}')
+                time.sleep(2)
+                self.u_count += 1
 
             
 
