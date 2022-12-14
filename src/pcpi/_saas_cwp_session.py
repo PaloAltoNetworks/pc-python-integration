@@ -99,13 +99,17 @@ class SaaSCWPSession(Session):
 
         res = object()
         try:
+            start_time = time.time()
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            end_time = time.time()
+            time_completed = end_time-start_time
+            
             self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
 
-        return res
+        return [res, time_completed]
 
     def _expired_login(self) -> None:
         self.logger.warning('CSPM session expired. Generating new session.')
@@ -116,10 +120,10 @@ class SaaSCWPSession(Session):
 
         res = object()
         try:
-            res = self.cspm_session._api_refresh()
+            res, time_completed = self.cspm_session._api_refresh()
             self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
 
-        return res
+        return [res, time_completed]

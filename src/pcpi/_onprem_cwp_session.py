@@ -74,13 +74,17 @@ class CWPSession(Session):
 
         res = object()
         try:
+            start_time = time.time()
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            end_time = time.time()
+            time_completed = end_time-start_time
+
             self.token_time_stamp = time.time()
         except:
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
 
-        return res
+        return [res, time_completed]
 
     def _expired_login(self) -> None:
         self.logger.error('FAILED')

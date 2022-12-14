@@ -38,7 +38,7 @@ class Session:
         res = self.empty_res
         while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
-                res = self._api_login()
+                res, time_completed = self._api_login()
 
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
@@ -57,7 +57,7 @@ class Session:
                     elif res.status_code == self.expired_code:
                         self._expired_login()
                     else:
-                        self.logger.error('FAILED')
+                        self.logger.error(f'FAILED - {time_completed} seconds')
                         self.logger.error('ERROR Logging In. JWT not generated.')
                         self.logger.warning('RESPONSE:')
                         self.logger.info(res)
@@ -66,7 +66,7 @@ class Session:
                         self.logger.warning('RESPONSE TEXT:')
                         self.logger.info(res.text)
                     
-                    res = self._api_login()
+                    res, time_completed = self._api_login()
 
                     retries +=1
                 
@@ -82,9 +82,9 @@ class Session:
                 self.headers = new_headers
 
                 try:
-                    self.logger.success('SUCCESS')
+                    self.logger.success(f'SUCCESS - {time_completed} seconds')
                 except:
-                    self.logger.info('SUCCESS')
+                    self.logger.info(f'SUCCESS - {time_completed} seconds')
 
                 self.u_count = 1
                 return token
@@ -106,7 +106,7 @@ class Session:
 
         while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
-                res = self._api_refresh()
+                res, time_completed = self._api_refresh()
 
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
@@ -125,7 +125,7 @@ class Session:
                     elif res.status_code == self.expired_code:
                         self._expired_login()
                     else:
-                        self.logger.error('FAILED')
+                        self.logger.error(f'FAILED - {time_completed} seconds')
                         self.logger.error('ERROR Refreshing Token.')
                         self.logger.warning('RESPONSE:')
                         self.logger.info(res)
@@ -134,7 +134,7 @@ class Session:
                         self.logger.warning('RESPONSE TEXT:')
                         self.logger.info(res.text)
                     
-                    res = self._api_refresh()
+                    res, time_completed = self._api_refresh()
 
                     retries +=1
                 
@@ -143,9 +143,9 @@ class Session:
                     exit()
 
                 try:
-                    self.logger.success('SUCCESS')
+                    self.logger.success(f'SUCCESS - {time_completed} seconds')
                 except:
-                    self.logger.info('SUCCESS')
+                    self.logger.info(f'SUCCESS - {time_completed} seconds')
 
                 self.u_count = 1
 
@@ -185,13 +185,13 @@ class Session:
                     self._api_refresh_wrapper()
 
                 self.logger.debug(f'{url}')
-                res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
+                res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     try:
-                        self.logger.success('SUCCESS')
+                        self.logger.success(f'SUCCESS - {time_completed} seconds')
                     except:
-                        self.logger.info('SUCCESS')
+                        self.logger.info(f'SUCCESS - {time_completed} seconds')
                     return res
 
                 retries = 0
@@ -219,14 +219,14 @@ class Session:
                     self.logger.warning(f'Retrying request. Code {res.status_code}.')
                     self.logger.debug(f'{url}')
 
-                    res = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
+                    res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
                     retries += 1
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     try:
-                        self.logger.success('SUCCESS')
+                        self.logger.success(f'SUCCESS - {time_completed} seconds')
                     except:
-                        self.logger.info('SUCCESS')
+                        self.logger.info(f'SUCCESS - {time_completed} seconds')
                     return res
 
                 if retries >= self.retries:
@@ -238,7 +238,7 @@ class Session:
                         if el in res.headers['x-redlock-status']:
                             return res
 
-                self.logger.error('FAILED')
+                self.logger.error(f'FAILED - {time_completed} seconds')
                 self.logger.error('REQUEST DUMP:')
                 self.logger.warning('REQUEST HEADERS:')
                 self.logger.info(self.headers)
@@ -314,11 +314,21 @@ class Session:
             })
 
         r = self.empty_res
+
+        start_time = time.time()
+        r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+        end_time = time.time()
+        time_completed = end_time-start_time
+
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
+                start_time = time.time()
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+                end_time = time.time()
+                time_completed = end_time-start_time
+
                 self.u_count = 1
-                return r
+                return [r, time_completed]
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
                 exit()
@@ -328,4 +338,4 @@ class Session:
                 time.sleep(2)
                 self.u_count += 1
 
-        return requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+        return [r, time_completed]
