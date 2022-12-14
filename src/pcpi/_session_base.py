@@ -306,6 +306,15 @@ class Session:
         #Call wrapper
         return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
+    def cwp_paginated_request():
+        pass
+
+    def cspm_paginated_request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+        pass
+
+    def cspm_paginated_request_function(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, function=None, redlock_ignore: list=None, status_ignore: list=[]):
+        pass
+
 
     def __request_wrapper(self, method, url, headers, json, data, params, verify, acceptCsv):
         if acceptCsv == True: #CSPM Support Only
