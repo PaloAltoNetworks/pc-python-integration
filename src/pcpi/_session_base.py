@@ -340,14 +340,14 @@ class Session:
         start_time = time.time()
         r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
         end_time = time.time()
-        time_completed = round(end_time-start_time,4)
+        time_completed = round(end_time-start_time,3)
 
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 start_time = time.time()
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
                 end_time = time.time()
-                time_completed = round(end_time-start_time,4)
+                time_completed = round(end_time-start_time,3)
 
                 self.u_count = 1
                 return [r, time_completed]

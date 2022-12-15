@@ -102,7 +102,7 @@ class SaaSCWPSession(Session):
             start_time = time.time()
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
             end_time = time.time()
-            time_completed = round(end_time-start_time, 4)
+            time_completed = round(end_time-start_time, 3)
             
             self.token_time_stamp = time.time()
         except:
