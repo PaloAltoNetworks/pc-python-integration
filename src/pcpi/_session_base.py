@@ -198,11 +198,6 @@ class Session:
                     except:
                         self.logger.info(f'SUCCESS - {time_completed} seconds')
                     return res
-                else:
-                    try:
-                        self.logger.success(f'SUCCESS - {time_completed} seconds')
-                    except:
-                        self.logger.info(f'SUCCESS - {time_completed} seconds')
 
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
