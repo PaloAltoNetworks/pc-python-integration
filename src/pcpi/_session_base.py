@@ -43,7 +43,8 @@ class Session:
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning('Increaseing wait time.')
+                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
+                        
                         #Increase timer when ever encounted to slow script execution.
                         if self.retry_timer == 0:
                             self.retry_timer = 1
@@ -52,7 +53,9 @@ class Session:
                             if self.retry_timer >= self.retry_timer_max:
                                 self.retry_timer = self.retry_timer_max
 
+                        self.logger.warning(f'Waiting {self.retry_timer} seconds')
                         time.sleep(self.retry_timer)
+                        self.logger.warning('Increasing wait time.')
 
                     elif res.status_code == self.expired_code:
                         self._expired_login()
@@ -111,7 +114,7 @@ class Session:
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning('Increasing wait time.')
+                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
                         #Increase timer when ever encounter to slow script execution.
                         if self.retry_timer == 0:
                             self.retry_timer = 1
@@ -120,7 +123,9 @@ class Session:
                             if self.retry_timer >= self.retry_timer_max:
                                 self.retry_timer = self.retry_timer_max
 
+                        self.logger.warning(f'Waiting {self.retry_timer} seconds')
                         time.sleep(self.retry_timer)
+                        self.logger.warning('Increasing wait time.')
 
                     elif res.status_code == self.expired_code:
                         self._expired_login()
@@ -193,16 +198,23 @@ class Session:
                     except:
                         self.logger.info(f'SUCCESS - {time_completed} seconds')
                     return res
+                else:
+                    try:
+                        self.logger.success(f'SUCCESS - {time_completed} seconds')
+                    except:
+                        self.logger.info(f'SUCCESS - {time_completed} seconds')
 
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
-                    #If we get a 429 code, sleep for a doubling ammount of time.
+                    #If we get a 429 code, sleep for a doubling amount of time.
                     if res.status_code in self.retry_delay_statuses:
+                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
                         #Wait for retry timer
                         if self.retry_timer > 0:
+                            self.logger.warning(f'Waiting {self.retry_timer} seconds')
                             time.sleep(self.retry_timer)
 
-                        self.logger.warning('Increasing wait time.')
+                        self.logger.warning('Increasing wait time')
                         #Increase timer when ever wait status encounted to slow script execution.
                         if self.retry_timer == 0:
                             self.retry_timer = 1
@@ -213,10 +225,11 @@ class Session:
                     
                     #If token expires, login again and get new token
                     if res.status_code == 401:
-                        self.logger.warning('Session expired. Generating new Token and retrying.')
+                        self.logger.warning(f'CODE 401 - {time_completed} seconds')
+                        self.logger.warning('session expired. Generating new Token and retrying')
                         self._api_login_wrapper()
 
-                    self.logger.warning(f'Retrying request. Code {res.status_code}.')
+                    self.logger.warning(f'Retrying request')
                     self.logger.debug(f'{url}')
 
                     res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
@@ -310,9 +323,14 @@ class Session:
         pass
 
     def cspm_paginated_request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+        #Should this return only the items or should it take the extra fields from the the first API call, then wrap that around all the items? Or just the items?
         pass
 
     def cspm_paginated_request_function(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, function=None, redlock_ignore: list=None, status_ignore: list=[]):
+        #What do do with first API call vs Paginated calls?
+        #First API call has extra fields that pagianted calls do not have.
+        #For each paginated call, should the inital data fields be included in the returned output? Or should it return exactly what the API returns.
+        
         pass
 
 
@@ -327,14 +345,14 @@ class Session:
         start_time = time.time()
         r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
         end_time = time.time()
-        time_completed = end_time-start_time
+        time_completed = round(end_time-start_time,4)
 
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 start_time = time.time()
                 r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
                 end_time = time.time()
-                time_completed = end_time-start_time
+                time_completed = round(end_time-start_time,4)
 
                 self.u_count = 1
                 return [r, time_completed]
