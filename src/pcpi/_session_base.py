@@ -1,6 +1,8 @@
 #Standard Library
 import time
 
+import json as json_lib
+
 #installed
 import requests
 
@@ -314,20 +316,88 @@ class Session:
         #Call wrapper
         return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
-    def cwp_paginated_request():
-        pass
-
-    def cspm_paginated_request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
-        #Should this return only the items or should it take the extra fields from the the first API call, then wrap that around all the items? Or just the items?
-        pass
-
-    def cspm_paginated_request_function(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, function=None, redlock_ignore: list=None, status_ignore: list=[]):
-        #What do do with first API call vs Paginated calls?
-        #First API call has extra fields that pagianted calls do not have.
-        #For each paginated call, should the inital data fields be included in the returned output? Or should it return exactly what the API returns.
+    def config_search_request(self, json: dict, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+        if verify == None:
+            verify = self.verify
         
-        pass
+        limit = 20000#Max limit value is 100,000
+        
+        #Force best practices with HS
+        json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
 
+        #initial API Call
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+
+        total_rows = 0
+        complete_res_list = []
+        complete_res_dict = res.json()
+
+        #res_data var used for while loop
+        res_data = res.json()['data']
+
+        complete_res_list.extend(res_data.get('items'))
+
+        retrievedRows = res_data.get('totalRows')
+        total_rows += retrievedRows
+
+        counter = 0
+        while 'nextPageToken' in res_data:
+            #update payload
+            json.update({'pageToken': res_data.get('nextPageToken')})
+
+            #call page endpoint
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            counter += 1
+
+            #update res_data with the paginated response
+            res_data = res.json()
+
+            #Add results from each page API call
+            complete_res_list.extend(res_data.get('items'))
+
+            retrievedRows = res_data.get('totalRows')
+            total_rows+= retrievedRows
+
+        #Update res dict to be the some format as the 'data' object in a typical RQL res
+        complete_res_dict['data'].update({'totalRows':total_rows, 'items': complete_res_list})
+
+        return complete_res_dict
+
+    def config_search_request_function(self, json, function, verify=None, acceptCsv=False,  redlock_ignore: list=None, status_ignore: list=[]):
+        if verify == None:
+            verify = self.verify
+        
+        limit = 20#0000#Max limit value is 100,000
+        
+        #Force best practices with HS
+        json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
+
+        #initial API Call
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        
+        total_rows = res.json()['data']['totalRows']
+
+        res_details = res.json()
+        res_details.pop('data')
+        res_data = res.json()['data']
+        counter = 0
+
+        function(res_details, res_data, counter, total_rows)
+
+        while 'nextPageToken' in res_data:
+            #update payload
+            json.update({'pageToken': res_data.get('nextPageToken')})
+
+            #call page endpoint
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            counter += 1
+
+            res_data = res.json()
+            total_rows += res_data['totalRows']
+
+            function(res_details, res_data, counter, total_rows)
+
+        return total_rows
 
     def __request_wrapper(self, method, url, headers, json, data, params, verify, acceptCsv):
         if acceptCsv == True: #CSPM Support Only

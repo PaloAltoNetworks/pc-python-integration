@@ -12,6 +12,8 @@ test.*
 globalprotect*
 *cert*
 
+temp/*
+
 # VSCode
 .vscode/*
 !.vscode/settings.json
