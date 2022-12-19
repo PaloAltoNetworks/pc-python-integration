@@ -274,13 +274,13 @@ class apiRequestTest(TestCase):
 
         self.assertEqual(res.status_code, 200)
 
-    def testCertOverwrite(self):
-        from src.pcpi import session_loader
-        manager = session_loader.load_from_file()
-        cspm_session = manager.create_cspm_session()
-        res = cspm_session.request('GET', '/cloud', verify='globalprotect_certifi.txt')
+    # def testCertOverwrite(self):
+    #     from src.pcpi import session_loader
+    #     manager = session_loader.load_from_file()
+    #     cspm_session = manager.create_cspm_session()
+    #     res = cspm_session.request('GET', '/cloud', verify='globalprotect_certifi.txt')
 
-        self.assertEqual(res.status_code, 200)
+    #     self.assertEqual(res.status_code, 200)
         
 if __name__ == '__main__':
     unittest.main()
