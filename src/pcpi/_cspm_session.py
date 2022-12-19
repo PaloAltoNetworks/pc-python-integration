@@ -67,6 +67,7 @@ class CSPMSession(Session):
         res = object()
         try:
             start_time = time.time()
+            self.logger.debug(url)
             res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
             end_time = time.time()
             time_completed = round(end_time-start_time,3)
@@ -89,6 +90,7 @@ class CSPMSession(Session):
             res = object()
             try:
                 start_time = time.time()
+                self.logger.debug(self.api_url + '/auth_token/extend')
                 res = requests.request("GET", self.api_url + '/auth_token/extend', headers=self.headers, verify=self.verify)
                 end_time = time.time()
                 time_completed = round(end_time-start_time,3)

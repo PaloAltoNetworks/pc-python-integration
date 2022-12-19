@@ -23,7 +23,7 @@ class Session:
         self.expired_code = 401
         self.retry_timer = 0
         self.retry_timer_max = 32
-        self.token_time = 480
+        self.token_time = 360
 
         self.empty_res = ''
 
@@ -45,7 +45,7 @@ class Session:
                 retries = 0
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
+                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds')
                         
                         #Increase timer when ever encounted to slow script execution.
                         if self.retry_timer == 0:
@@ -62,7 +62,12 @@ class Session:
                     elif res.status_code == self.expired_code:
                         self._expired_login()
                     else:
-                        self.logger.error(f'FAILED - {time_completed} seconds')
+                        code = "NO_CODE"
+                        try:
+                            code = res.status_code
+                        except:
+                            pass
+                        self.logger.error(f'FAILED {code} - {time_completed} seconds')
                         self.logger.error('ERROR Logging In. JWT not generated.')
                         self.logger.warning('RESPONSE:')
                         self.logger.info(res)
@@ -130,9 +135,17 @@ class Session:
                         self.logger.warning('Increasing wait time.')
 
                     elif res.status_code == self.expired_code:
-                        self._expired_login()
+                        self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
+                        self.logger.warning('Session expired. Generating new Token')
+                        self._api_login_wrapper()
+                        return
                     else:
-                        self.logger.error(f'FAILED - {time_completed} seconds')
+                        code = "NO_CODE"
+                        try:
+                            code = res.status_code
+                        except:
+                            pass
+                        self.logger.error(f'FAILED {code} - {time_completed} seconds')
                         self.logger.error('ERROR Refreshing Token.')
                         self.logger.warning('RESPONSE:')
                         self.logger.info(res)
@@ -205,7 +218,7 @@ class Session:
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     #If we get a 429 code, sleep for a doubling amount of time.
                     if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
+                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds')
                         #Wait for retry timer
                         if self.retry_timer > 0:
                             self.logger.warning(f'Waiting {self.retry_timer} seconds')
@@ -221,9 +234,9 @@ class Session:
                                 self.retry_timer = self.retry_timer_max
                     
                     #If token expires, login again and get new token
-                    if res.status_code == 401:
-                        self.logger.warning(f'CODE 401 - {time_completed} seconds')
-                        self.logger.warning('session expired. Generating new Token and retrying')
+                    if res.status_code == self.expired_code:
+                        self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
+                        self.logger.warning('Session expired. Generating new Token and retrying')
                         self._api_login_wrapper()
 
                     self.logger.warning(f'Retrying request')
@@ -248,7 +261,12 @@ class Session:
                         if el in res.headers['x-redlock-status']:
                             return res
 
-                self.logger.error(f'FAILED - {time_completed} seconds')
+                code = "NO_CODE"
+                try:
+                    code = res.status_code
+                except:
+                    pass
+                self.logger.error(f'FAILED {code} - {time_completed} seconds')
                 self.logger.error('REQUEST DUMP:')
                 self.logger.warning('REQUEST HEADERS:')
                 self.logger.info(self.headers)
