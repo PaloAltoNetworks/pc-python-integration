@@ -122,6 +122,7 @@ class Session:
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     if res.status_code in self.retry_delay_statuses:
                         self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
+                        self.logger.warning(f'HEADERS: {res.headers}')
                         #Increase timer when ever encounter to slow script execution.
                         if self.retry_timer == 0:
                             self.retry_timer = 1
