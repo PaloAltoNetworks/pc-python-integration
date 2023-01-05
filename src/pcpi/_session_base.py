@@ -386,7 +386,7 @@ class Session:
         if verify == None:
             verify = self.verify
         
-        limit = 20#0000#Max limit value is 100,000
+        limit = 2000#Max limit value is 100,000
         
         #Force best practices with HS
         json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
