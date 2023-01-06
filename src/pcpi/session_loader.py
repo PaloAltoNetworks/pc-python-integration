@@ -485,7 +485,7 @@ def __get_config_from_user(num_tenants, min_tenants):
         while True:
             valid = False
             while not valid:
-                __c_print('Enter credentials for the tenant', color='blue')
+                __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
@@ -499,7 +499,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                     tenant_count +=1
             
             if tenant_count >= min_tenants:
-                __c_print('Would you like to add an other tenant? Y/N')
+                __c_print('Would you like to add another Prisma Cloud credential? Y/N')
                 choice = input().lower()
                 if choice != 'yes' and choice != 'y':
                     break
@@ -507,7 +507,7 @@ def __get_config_from_user(num_tenants, min_tenants):
         while True:
             valid = False
             while not valid:
-                __c_print('Enter credentials for the tenant', color='blue')
+                __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
@@ -519,7 +519,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                 else:
                     credentials.append(__build_config_json(name, _id, secret, url, verify))
             
-            __c_print('Would you like to add an other tenant? Y/N')
+            __c_print('Would you like to add another Prisma Cloud credential? Y/N')
             choice = input().lower()
 
             if choice != 'yes' and choice != 'y':
