@@ -143,9 +143,9 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
 
 def __universal_validate_credentials(name, url, _id, secret, verify):
     if 'prismacloud.io' in url or 'prismacloud.cn' in url:
-        return __validate_credentials(_id, secret, url, verify)
+        return __validate_credentials(_id, secret, url, bool(verify))
     else:
-        return __validate_cwp_credentials(name, url, _id, secret, verify)
+        return __validate_cwp_credentials(name, url, _id, secret, bool(verify))
 
 #==============================================================================
 
@@ -984,6 +984,7 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
             config_data = json.load(infile)
         except:
             logger.error('Failed to load credentials file. Exiting...')
+            exit()
 
     for blob in config_data:
         if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
