@@ -469,7 +469,7 @@ def __get_config_from_user(num_tenants, min_tenants):
         for i in range(num_tenants):
             valid = False
             while not valid:
-                __c_print('Enter credentials for the tenant', color='blue')
+                __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
                 name, _id, secret, url, verify = __get_config()
                 
