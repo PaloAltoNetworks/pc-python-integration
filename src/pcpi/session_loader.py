@@ -980,7 +980,10 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
 
     config_data = {}
     with open(config_path, 'r') as infile:
-        config_data = json.load(infile)
+        try:
+            config_data = json.load(infile)
+        except:
+            logger.error('Failed to load credentials file. Exiting...')
 
     for blob in config_data:
         if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
