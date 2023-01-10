@@ -202,7 +202,7 @@ def __get_cwp_tenant_credentials():
     return name, url, uname, passwd, verify
 
 def __get_config():
-    __c_print('Enter tenant/console name or any preferred identifier (optional):', color='blue')
+    __c_print('Enter tenant/console name or project ID:', color='blue')
     name = input()
 
     __c_print('Enter url. (SaaS EX: https://app.ca.prismacloud.io, On-Prem EX: https://yourdomain.com):', color='blue')
@@ -226,6 +226,8 @@ def __get_config():
     __c_print('Leave blank to use default value (True).', color='yellow')
     verify = input()
     print()
+
+    verify = verify.strip()
 
     if verify == '':
         verify = 'true'
@@ -987,10 +989,18 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
             exit()
 
     for blob in config_data:
-        if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
-            tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], bool(blob['verify']), logger=logger))
+        verify = blob['verify']
+        if verify.lower().strip() == 'false':
+            verify = False
+        elif verify.lower().strip() == 'true':
+            verify = True
         else:
-            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], bool(blob['verify']), logger=logger))
+            verify = verify
+
+        if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
+            tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], verify, logger=logger))
+        else:
+            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], verify, logger=logger))
 
     return tenant_sessions
 

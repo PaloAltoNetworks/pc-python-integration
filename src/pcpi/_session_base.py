@@ -302,6 +302,7 @@ class Session:
                 self.logger.error('Keyboard Interrupt. Exiting...')
                 exit()
             except Exception as e:
+                #self.logger.error(e, f'- {time_completed} seconds')
                 self.logger.error(e)
                 if res == self.empty_res:
                     self.logger.error(f'UNKNOWN ERROR - API Call Wrapper. Retrying... {self.u_count} of {self.unknown_error_max}')
