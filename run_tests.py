@@ -193,10 +193,10 @@ class credentialFileTests(TestCase):
 
         result = session_loader.onprem_load_min_from_file(2)
 
-        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).tenant])
-        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).uname])
-        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).passwd])
-        self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).api_url])
+        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).tenant])
+        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).uname])
+        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).passwd])
+        self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).api_url])
 
     def testOnpremLoadMultiFromFile(self):
         load_onprem_environment()
@@ -216,10 +216,10 @@ class credentialFileTests(TestCase):
 
         result = session_loader.onprem_load_multi_from_file(num_tenants=2)
 
-        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).tenant])
-        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).uname])
-        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).passwd])
-        self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, py_logger).api_url])
+        self.assertEqual([result[0].tenant, result[1].tenant], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).tenant, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).tenant])
+        self.assertEqual([result[0].uname, result[1].uname], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).uname, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).uname])
+        self.assertEqual([result[0].passwd, result[1].passwd], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).passwd, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).passwd])
+        self.assertEqual([result[0].api_url, result[1].api_url], [onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).api_url, onprem_session_manager.CWPSessionManager(name2, api_url2, uname2, passwd2, verify2, False, py_logger).api_url])
 
     def testOnpremLoadFromFile(self):
         load_onprem_environment()
@@ -233,10 +233,10 @@ class credentialFileTests(TestCase):
 
         result = session_loader.onprem_load_from_file()
 
-        self.assertEqual(result.tenant, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).tenant)
-        self.assertEqual(result.uname, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).uname)
-        self.assertEqual(result.passwd, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).passwd)
-        self.assertEqual(result.api_url, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, py_logger).api_url)
+        self.assertEqual(result.tenant, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).tenant)
+        self.assertEqual(result.uname, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).uname)
+        self.assertEqual(result.passwd, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).passwd)
+        self.assertEqual(result.api_url, onprem_session_manager.CWPSessionManager(name, api_url, uname, passwd, verify, False, py_logger).api_url)
 
 class apiRequestTest(TestCase):
     def testCSPMRecovery(self):

@@ -14,7 +14,7 @@ import time
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify:bool, project_flag:bool, logger: object):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -32,6 +32,7 @@ class CWPSession(Session):
         self.uname = uname
         self.passwd = passwd
         self.verify = verify
+        self.project_flag = project_flag
 
         self.token_time_stamp = 0
 

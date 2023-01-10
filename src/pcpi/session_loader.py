@@ -202,10 +202,7 @@ def __get_cwp_tenant_credentials():
     return name, url, uname, passwd, verify
 
 def __get_config():
-    __c_print('Enter tenant/console name or project ID:', color='blue')
-    name = input()
-
-    __c_print('Enter url. (SaaS EX: https://app.ca.prismacloud.io, On-Prem EX: https://yourdomain.com):', color='blue')
+    __c_print('Enter Prisma URL. (SaaS EX: https://app.ca.prismacloud.io, On-Prem EX: https://yourdomain.com):', color='blue')
     url = input()
     print()
     new_url = __validate_url(url)
@@ -227,6 +224,25 @@ def __get_config():
     verify = input()
     print()
 
+    #If there is non-prisma URL, then ask if its a self hosted project
+    project_flag = 'false'
+    if 'prismacloud.io' not in new_url or 'prismacloud.cn' not in new_url:
+        __c_print('CWP Project (True/False)', color='blue')
+        __c_print('Leave blank to use default value (False).', color='yellow')
+        project_flag = input()
+        if project_flag.lower() == 'true':
+            project_flag = 'true'
+        else:
+            project_flag = 'false'
+    
+    name = 'DEFAULT_NAME'
+    if project_flag == 'true':
+        __c_print('Enter project ID:', color='blue')
+        name = input()
+    else:
+        __c_print('Enter tenant/console name (Optional):', color='blue')
+        name = input()
+
     verify = verify.strip()
 
     if verify == '':
@@ -239,7 +255,7 @@ def __get_config():
         pass
     
 
-    return name, _id, secret, new_url, verify
+    return name, _id, secret, new_url, verify, project_flag
 
 def __get_tenant_credentials():
 
@@ -304,13 +320,14 @@ def __build_session_dict(name, a_key, s_key, url, verify):
     }
     return session_dict
 
-def __build_config_json(name, _id, secret, url, verify):
+def __build_config_json(name, _id, secret, url, verify, project_flag):
     session_dict = {
         'name': name,
         'url': url,
         'identity': _id,
         'secret': secret,
-        'verify': verify
+        'verify': verify,
+        'project_flag': project_flag
     }
     return session_dict
 
@@ -473,7 +490,7 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify = __get_config()
+                name, _id, secret, url, verify, project_flag = __get_config()
                 
                 valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
@@ -481,7 +498,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
     elif num_tenants == -1 and min_tenants != -1:
         tenant_count = 0
         while True:
@@ -489,7 +506,7 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify = __get_config()
+                name, _id, secret, url, verify, project_flag = __get_config()
                 
                 valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
@@ -497,7 +514,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
                     tenant_count +=1
             
             if tenant_count >= min_tenants:
@@ -511,7 +528,7 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify = __get_config()
+                name, _id, secret, url, verify, project_flag = __get_config()
                 
                 valid = __universal_validate_credentials(name, url, _id, secret, verify)
                 if valid == False:
@@ -519,7 +536,7 @@ def __get_config_from_user(num_tenants, min_tenants):
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
             
             __c_print('Would you like to add another Prisma Cloud credential? Y/N')
             choice = input().lower()
@@ -602,7 +619,7 @@ def onprem_load_from_env(logger=py_logger) -> object:
         logger.info('Missing required environment variables. Exiting...')
         exit()
 
-    return CWPSessionManager(name, api_url, uname, passwd, verify, logger)
+    return CWPSessionManager(name, api_url, uname, passwd, verify, False, logger)
 
 #==============================================================================
 def onprem_load_min_from_file(min_tenants, file_path='console_credentials.yml', logger=py_logger):
@@ -641,7 +658,7 @@ def onprem_load_min_from_file(min_tenants, file_path='console_credentials.yml', 
         except:
             pass
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, project_flag=False, logger=logger))
 
     return tenant_sessions
 
@@ -681,7 +698,7 @@ def onprem_load_multi_from_file(file_path='console_credentials.yml', logger=py_l
         except:
             pass
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, project_flag=False, logger=logger))
 
 
     return tenant_sessions
@@ -722,7 +739,7 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger)
         except:
             pass
 
-        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, logger=logger))
+        tenant_sessions.append(CWPSessionManager(tenant, api_url, uname=uname, passwd=passwd, verify=verify, project_flag=False, logger=logger))
 
     try:   
         return tenant_sessions[0]
@@ -1000,7 +1017,13 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
         if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
             tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], verify, logger=logger))
         else:
-            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], verify, logger=logger))
+            project_flag = False
+            project_flag_in = blob.get('project_flag', None)
+            if project_flag_in:
+                if project_flag_in.lower().strip() == 'true':
+                    project_flag = True
+
+            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], verify, project_flag, logger=logger))
 
     return tenant_sessions
 
@@ -1017,11 +1040,16 @@ def load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger):
         if 'prismacloud.io' in tenant['url'] or 'prismacloud.cn' in tenant['url']:
             tenant_sessions.append(SaaSSessionManager(tenant['name'], tenant['identity'], tenant['secret'], tenant['url'], tenant['verify'], logger=logger))
         else:
-            tenant_sessions.append(CWPSessionManager(tenant['name'], tenant['url'], tenant['identity'], tenant['secret'], tenant['verify'], logger=logger))
+            project_flag = False
+            project_flag_in = tenant.get('project_flag', None)
+            if project_flag_in:
+                if project_flag_in.lower().strip() == 'true':
+                    project_flag = True
+            tenant_sessions.append(CWPSessionManager(tenant['name'], tenant['url'], tenant['identity'], tenant['secret'], tenant['verify'], project_flag, logger=logger))
 
     return tenant_sessions
 
-def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY',  logger=py_logger):
+def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY', project_flag_name='PRISMA_PCPI_PROJECT_FLAG',  logger=py_logger):
     error_exit = False
 
     name = 'Tenant'
@@ -1062,6 +1090,14 @@ def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI
             verify = True
     except:
         logger.warning(f'Missing \'{verify_name}\' environment variable. Using default value...')
+    
+    project_flag =  False
+    try:
+        project_flag = os.environ[project_flag_name]
+        if project_flag.lower().strip() == 'true':
+            project_flag = True
+    except:
+        logger.warning(f'Missing \'{project_flag_name}\' environment variable. Using default value...')
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
@@ -1070,4 +1106,4 @@ def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI
     if 'prismacloud.io' in api or 'prismacloud.cn' in api:
         return SaaSSessionManager(name, a_key, s_key, api, verify, logger=logger)
     else:
-        return CWPSessionManager(name, api, a_key, s_key, verify, logger=logger)
+        return CWPSessionManager(name, api, a_key, s_key, verify, project_flag, logger=logger)
