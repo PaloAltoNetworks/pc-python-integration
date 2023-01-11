@@ -993,8 +993,8 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
     tenant_sessions = []
 
     if not os.path.exists(config_path):
+        config = __get_config_from_user(num_tenants, min_tenants)
         with open(config_path, 'w') as outfile:
-            config = __get_config_from_user(num_tenants, min_tenants)
             json.dump(config, outfile)
 
     config_data = {}
