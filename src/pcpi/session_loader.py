@@ -226,7 +226,7 @@ def __get_config():
 
     #If there is non-prisma URL, then ask if its a self hosted project
     project_flag = 'false'
-    if 'prismacloud.io' not in new_url or 'prismacloud.cn' not in new_url:
+    if 'prismacloud.io' not in new_url and 'prismacloud.cn' not in new_url:
         __c_print('CWP Project (True/False)', color='blue')
         __c_print('Leave blank to use default value (False).', color='yellow')
         project_flag = input()
