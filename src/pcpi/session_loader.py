@@ -234,6 +234,7 @@ def __get_config():
         __c_print('CWP Project (True/False)', color='blue')
         __c_print('Leave blank to use default value (False).', color='yellow')
         project_flag = input()
+        print()
         if project_flag.lower() == 'true':
             project_flag = 'true'
         else:
