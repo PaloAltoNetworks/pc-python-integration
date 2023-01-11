@@ -101,7 +101,6 @@ def __validate_cwp_credentials(name, _url, uname, passwd, verify) -> bool:
         print()
         __c_print('2) Please ensure you have entered a valid Prisma Cloud URL.', color='blue')
         print()
-        quit()
         return False
 
 def __validate_credentials(a_key, s_key, url, verify) -> bool:
@@ -247,6 +246,8 @@ def __get_config():
     else:
         __c_print('Enter tenant/console name (Optional):', color='blue')
         name = input()
+
+    print()
 
     verify = verify.strip()
 
