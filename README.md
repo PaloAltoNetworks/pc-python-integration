@@ -134,7 +134,7 @@ load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger) # returns ses
 #logger -- exclude to use default pylogger config or create a py logger object and pass that in for the logger value. 
 # Can also use a loguru logger object
 load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', 
-                api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY',  logger=py_logger) # returns single session manager
+                api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY',  project_flag_name='PRISMA_PCPI_PROJECT_FLAG', logger=py_logger) # returns single session manager
 
 #-- SESSION MANAGERS --
 #Session loader returns a list of session managers
@@ -151,7 +151,8 @@ onprem_cwp_session = my_onprem_session_manager.create_cwp_session()
 
 #-- SESSION FUNCTION --
 #Session objects are used to make API requests
-cspm_session.request('', '', json={}, params={}, verify=True)
+cspm_session.request('GET', '<api_endpoint>', json={}, params={}, verify=True)
+cwp_session.request( 'POST', '<api_endpoint>', json={}, params={}, verify=True)
 
 #-- SESSION REQUEST ARGUMENTS --
 #method - position 1 - required - the http verb used in the request
