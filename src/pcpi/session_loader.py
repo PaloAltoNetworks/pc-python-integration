@@ -142,10 +142,14 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
         return False
 
 def __universal_validate_credentials(name, url, _id, secret, verify):
-    if 'prismacloud.io' in url or 'prismacloud.cn' in url:
-        return __validate_credentials(_id, secret, url, bool(verify))
+    if verify.lower() == 'true':
+        verify = True
     else:
-        return __validate_cwp_credentials(name, url, _id, secret, bool(verify))
+        verify = False
+    if 'prismacloud.io' in url or 'prismacloud.cn' in url:
+        return __validate_credentials(_id, secret, url, verify)
+    else:
+        return __validate_cwp_credentials(name, url, _id, secret, verify)
 
 #==============================================================================
 
