@@ -322,6 +322,16 @@ class Session:
         if verify == None:
             verify = self.verify
 
+        #If the CWP Session is a project, auto add project id query string
+        try:
+            if self.project_flag == True:
+                if params:
+                    params.update({"project":self.tenant})
+                else:
+                    params = {"project":self.tenant}
+        except:
+            pass
+
         #Validate method
         method = method.upper()
         if method not in ['POST', 'PUT', 'GET', 'OPTIONS', 'DELETE', 'PATCH']:

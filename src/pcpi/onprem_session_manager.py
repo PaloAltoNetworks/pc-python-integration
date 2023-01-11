@@ -13,7 +13,7 @@ class CWPSessionManager:
         api_url -- API URL Tenant is hosted on 
         """
         self.logger = logger
-
+    
         self.tenant = tenant_name
         self.uname = uname
         self.passwd = passwd
