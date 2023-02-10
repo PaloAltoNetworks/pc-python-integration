@@ -11,7 +11,7 @@ from urllib3.exceptions import InsecureRequestWarning
 class Session:
     def __init__(self,logger):
         """
-        Initalizes a Prisma Cloud API Session Manager.
+        Initializes a Prisma Cloud API Session Manager.
 
         Keyword Arguments:
         logger - optional logger, either pylib logger or loguru
@@ -43,6 +43,7 @@ class Session:
                 res, time_completed = self._api_login()
 
                 retries = 0
+                encountered_401 = False
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     if res.status_code in self.retry_delay_statuses:
                         self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds')
@@ -60,7 +61,16 @@ class Session:
                         self.logger.warning('Increasing wait time.')
 
                     elif res.status_code == self.expired_code:
+                        if encountered_401 == True:
+                            self.logger.error('ERROR - Can not perform API operations')
+                            self.logger.warning('Steps to troubleshoot: ')
+                            self.logger.warning('1) Ensure Access Key has proper permission.')
+                            self.logger.warning('2) Ensure Prisma Cloud license is valid.')
+                            self.logger.warning('3) If using a CWPP Project, ensure project name is valid in credential configurations.')
+                            exit()
+
                         self._expired_login()
+                        encountered_401 = True
                     else:
                         code = "NO_CODE"
                         try:
@@ -75,6 +85,7 @@ class Session:
                         self.logger.info(res.url)
                         self.logger.warning('RESPONSE TEXT:')
                         self.logger.info(res.text)
+
                     
                     res, time_completed = self._api_login()
 
@@ -114,75 +125,79 @@ class Session:
     def _api_refresh_wrapper(self):
         res = self.empty_res
 
-        while res == self.empty_res and self.u_count < self.unknown_error_max:
-            try:
-                res, time_completed = self._api_refresh()
-
-                retries = 0
-                while res.status_code in self.retry_statuses and retries < self.retries:
-                    if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
-                        self.logger.warning(f'HEADERS: {res.headers}')
-                        #Increase timer when ever encounter to slow script execution.
-                        if self.retry_timer == 0:
-                            self.retry_timer = 1
-                        else:
-                            self.retry_timer = self.retry_timer*2
-                            if self.retry_timer >= self.retry_timer_max:
-                                self.retry_timer = self.retry_timer_max
-
-                        self.logger.warning(f'Waiting {self.retry_timer} seconds')
-                        time.sleep(self.retry_timer)
-                        self.logger.warning('Increasing wait time.')
-
-                    elif res.status_code == self.expired_code:
-                        self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
-                        self.logger.warning('Session expired. Generating new Token')
-                        self._api_login_wrapper()
-                        return
-                    else:
-                        code = "NO_CODE"
-                        try:
-                            code = res.status_code
-                        except:
-                            pass
-                        self.logger.error(f'FAILED {code} - {time_completed} seconds')
-                        self.logger.error('ERROR Refreshing Token.')
-                        self.logger.warning('RESPONSE:')
-                        self.logger.info(res)
-                        self.logger.warning('RESPONSE URL:')
-                        self.logger.info(res.url)
-                        self.logger.warning('RESPONSE TEXT:')
-                        self.logger.info(res.text)
-                    
+        refresh_func = getattr(self, "_api_refresh", None)
+        if not callable(refresh_func):
+            return self._api_login_wrapper()
+        else:
+            while res == self.empty_res and self.u_count < self.unknown_error_max:
+                try:
                     res, time_completed = self._api_refresh()
 
-                    retries +=1
-                
-                if retries == self.retries:
-                    self.logger.error('ERROR. Max retires exceeded on JWT refresh. Exiting...')
+                    retries = 0
+                    while res.status_code in self.retry_statuses and retries < self.retries:
+                        if res.status_code in self.retry_delay_statuses:
+                            self.logger.warning(f'CODE {res.status_code} - {time_completed} seconds')
+                            self.logger.warning(f'HEADERS: {res.headers}')
+                            #Increase timer when ever encounter to slow script execution.
+                            if self.retry_timer == 0:
+                                self.retry_timer = 1
+                            else:
+                                self.retry_timer = self.retry_timer*2
+                                if self.retry_timer >= self.retry_timer_max:
+                                    self.retry_timer = self.retry_timer_max
+
+                            self.logger.warning(f'Waiting {self.retry_timer} seconds')
+                            time.sleep(self.retry_timer)
+                            self.logger.warning('Increasing wait time.')
+
+                        elif res.status_code == self.expired_code:
+                            self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
+                            self.logger.warning('Session expired. Generating new Token')
+                            self._api_login_wrapper()
+                            return
+                        else:
+                            code = "NO_CODE"
+                            try:
+                                code = res.status_code
+                            except:
+                                pass
+                            self.logger.error(f'FAILED {code} - {time_completed} seconds')
+                            self.logger.error('ERROR Refreshing Token.')
+                            self.logger.warning('RESPONSE:')
+                            self.logger.info(res)
+                            self.logger.warning('RESPONSE URL:')
+                            self.logger.info(res.url)
+                            self.logger.warning('RESPONSE TEXT:')
+                            self.logger.info(res.text)
+                        
+                        res, time_completed = self._api_refresh()
+
+                        retries +=1
+                    
+                    if retries == self.retries:
+                        self.logger.error('ERROR. Max retires exceeded on JWT refresh. Exiting...')
+                        exit()
+
+                    try:
+                        self.logger.success(f'SUCCESS - {time_completed} seconds')
+                    except:
+                        self.logger.info(f'SUCCESS - {time_completed} seconds')
+
+                    self.u_count = 1
+
+                    return
+
+                except KeyboardInterrupt:
+                    self.logger.error('Keyboard Interrupt. Exiting...')
                     exit()
-
-                try:
-                    self.logger.success(f'SUCCESS - {time_completed} seconds')
-                except:
-                    self.logger.info(f'SUCCESS - {time_completed} seconds')
-
-                self.u_count = 1
-
-                return
-
-            except KeyboardInterrupt:
-                self.logger.error('Keyboard Interrupt. Exiting...')
-                exit()
-            except Exception as e:
-                self.logger.error(e)
-                self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying... {self.u_count} of {self.unknown_error_max}')
-                self.u_count += 1
-                self.logger.warning('Steps to troubleshoot: ')
-                self.logger.warning('1) Disable any VPNs.')
-                self.logger.warning('2) Ensure API base URL is correct.')
-                time.sleep(1)
+                except Exception as e:
+                    self.logger.error(e)
+                    self.logger.error(f'UNKNOWN ERROR - API refresh. Retrying... {self.u_count} of {self.unknown_error_max}')
+                    self.u_count += 1
+                    self.logger.warning('Steps to troubleshoot: ')
+                    self.logger.warning('1) Disable any VPNs.')
+                    self.logger.warning('2) Ensure API base URL is correct.')
+                    time.sleep(1)
 
 
 #==============================================================================
@@ -216,6 +231,7 @@ class Session:
                     return res
 
                 retries = 0
+                encountered_401 = False
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     #If we get a 429 code, sleep for a doubling amount of time.
                     if res.status_code in self.retry_delay_statuses:
@@ -236,9 +252,18 @@ class Session:
                     
                     #If token expires, login again and get new token
                     if res.status_code == self.expired_code:
+                        if encountered_401 == True:
+                            self.logger.error('ERROR - Can not perform API operations')
+                            self.logger.warning('Steps to troubleshoot: ')
+                            self.logger.warning('1) Ensure Access Key has proper permission.')
+                            self.logger.warning('2) Ensure Prisma Cloud license is valid.')
+                            self.logger.warning('3) If using a CWPP Project, ensure project name is valid in credential configurations.')
+                            exit()
+
                         self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
                         self.logger.warning('Session expired. Generating new Token and retrying')
                         self._api_login_wrapper()
+                        encountered_401 = True
 
                     self.logger.warning(f'Retrying request')
                     self.logger.debug(f'{url}')

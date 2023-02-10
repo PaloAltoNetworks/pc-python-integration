@@ -278,7 +278,7 @@ class apiRequestTest(TestCase):
     #     from src.pcpi import session_loader
     #     manager = session_loader.load_from_file()
     #     cspm_session = manager.create_cspm_session()
-    #     res = cspm_session.request('GET', '/cloud', verify='globalprotect_certifi.txt')
+    #     res = cspm_session.request('GET', '/compliance', verify='globalprotect_certifi.txt')
 
     #     self.assertEqual(res.status_code, 200)
         
