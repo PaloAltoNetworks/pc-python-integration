@@ -178,6 +178,13 @@ class Session:
                         self.logger.error('ERROR. Max retires exceeded on JWT refresh. Exiting...')
                         exit()
 
+                    #Update token and headers
+                    token = res.json().get('token')
+                    self.token = token
+                    new_headers = self.headers
+                    new_headers[self.auth_key] = self.auth_style + token
+                    self.headers = new_headers
+
                     try:
                         self.logger.success(f'SUCCESS - {time_completed} seconds')
                     except:
@@ -201,7 +208,7 @@ class Session:
 
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_error_message=''):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -235,7 +242,11 @@ class Session:
                 while res.status_code in self.retry_statuses and retries < self.retries:
                     #If we get a 429 code, sleep for a doubling amount of time.
                     if res.status_code in self.retry_delay_statuses:
-                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds')
+                        error_msg = ''
+                        if custom_error_message:
+                            error_msg = " - " + custom_error_message
+
+                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds{error_msg}')
                         #Wait for retry timer
                         if self.retry_timer > 0:
                             self.logger.warning(f'Waiting {self.retry_timer} seconds')
@@ -338,7 +349,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_error_message=''):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -369,7 +380,7 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_error_message=custom_error_message)
 
     def config_search_request(self, json: dict, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
