@@ -208,7 +208,7 @@ class Session:
 
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_error_message=''):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -231,10 +231,14 @@ class Session:
                 res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
+                    log_message = ''
+                    if custom_log:
+                        log_message = ' - ' + custom_log
+
                     try:
-                        self.logger.success(f'SUCCESS - {time_completed} seconds')
+                        self.logger.success(f'SUCCESS - {time_completed} seconds{log_message}')
                     except:
-                        self.logger.info(f'SUCCESS - {time_completed} seconds')
+                        self.logger.info(f'SUCCESS - {time_completed} seconds{log_message}')
                     return res
 
                 retries = 0
@@ -243,10 +247,13 @@ class Session:
                     #If we get a 429 code, sleep for a doubling amount of time.
                     if res.status_code in self.retry_delay_statuses:
                         error_msg = ''
+                        log_message = ''
                         if custom_error_message:
                             error_msg = " - " + custom_error_message
+                        if custom_log:
+                            log_message = ' - ' + custom_log
 
-                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds{error_msg}')
+                        self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds{log_message}{error_msg}')
                         #Wait for retry timer
                         if self.retry_timer > 0:
                             self.logger.warning(f'Waiting {self.retry_timer} seconds')
@@ -349,7 +356,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_error_message=''):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -380,7 +387,7 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_error_message=custom_error_message)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
 
     def config_search_request(self, json: dict, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
