@@ -102,7 +102,7 @@ session_loader.load_config_user()
 #--Session loader arguments are all optional--
 
 # load_config()
-#file_path -- Path to credentials file. File will be created at the path specified. 
+#file_path -- Path to credentials file. File will be created at the path specified. You will be promted for credentials. 
 # Exclude argument to use default path.
 #num_tenants -- Number of tenant configurations that will be included in the config JSON file. 
 # Only applies when a config file is being created.
