@@ -2,11 +2,15 @@
 import time
 import logging
 
+logging.basicConfig()
+py_logger = logging.getLogger("pcpi")
+py_logger.setLevel(10)
+
 #Local
 from ._session_types import CSPMSession, SaaSCWPSession
 
 class SaaSSessionManager:
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify=True, logger=py_logger):
         """
         Initializes a Prisma Cloud API Session Manager.
 

@@ -1,8 +1,13 @@
 #Local
 from ._session_types import CWPSession
+import logging
+
+logging.basicConfig()
+py_logger = logging.getLogger("pcpi")
+py_logger.setLevel(10)
 
 class CWPSessionManager:
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, verify:bool, project_flag:bool, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, verify:bool=True, project_flag:bool=False, logger:object=py_logger):
         """
         Initializes a Prisma Cloud API Session Manager.
 
