@@ -166,6 +166,51 @@ cwp_session.request( 'POST', '<api_endpoint>', json={}, params={}, verify=True)
 
 # Prisma Cloud Python Integration Documentation and Examples
 
+## RQL Search Pagination Helper Functions
+```python
+config_search_request(self, json: dict, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+
+config_search_request_function(self, json, function, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+
+#EX
+#
+#
+# payload = {
+#     "query": "config from cloud.resource where resource.status = Active",
+#     "timeRange": {
+#         "relativeTimeType": "BACKWARD",
+#         "type": "relative",
+#         "value": {
+#             "amount": 24,
+#             "unit": "hour"
+#         }
+#     },
+#     "limit": 2000,
+#     "withResourceJson": False
+# }
+#
+# OPTION 1 - PCPI will collect each page of data and return all data as one object
+#data = cspm_session.config_search_request(payload)
+#
+# with open(‘out.json’, ‘w’) as outfile:
+#	json.dump(data, outfile)
+#
+#
+# # OPTION 2 - Handle what is done with each page yourself
+# def dump_data(details, data, counter, total_rows):
+#     if counter == 0:
+#         with open(f'detailsOut.json', 'w') as outfile:
+#             json.dump(details, outfile)
+#
+#     with open(f'temp/dataOut{counter}.json', 'w') as outfile:
+#         json.dump(data, outfile)
+#
+# total_rows = cspm_session.config_search_request_function(payload, dump_data)
+
+# print(f'Got {total_rows} Total Rows')
+
+```
+
 ## Session Loaders
 
 The session loader is a module that has functions for loading Prisma Cloud credentials from a file, environment variables, or from the user into your program. This ensures you get your script up and running as quickly as possible.
