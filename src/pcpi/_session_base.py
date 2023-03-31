@@ -389,7 +389,7 @@ class Session:
         #Call wrapper
         return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
 
-    def config_search_request(self, json: dict, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[]):
+    def config_search_request(self, json: dict, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
             verify = self.verify
         
@@ -399,7 +399,7 @@ class Session:
         json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
 
         #initial API Call
-        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
         total_rows = 0
         complete_res_list = []
@@ -419,7 +419,7 @@ class Session:
             json.update({'pageToken': res_data.get('nextPageToken')})
 
             #call page endpoint
-            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
             counter += 1
 
             #update res_data with the paginated response
@@ -436,7 +436,7 @@ class Session:
 
         return complete_res_dict
 
-    def config_search_request_function(self, json, function, verify=None, acceptCsv=False,  redlock_ignore: list=None, status_ignore: list=[]):
+    def config_search_request_function(self, json, function, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
             verify = self.verify
         
@@ -446,7 +446,7 @@ class Session:
         json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
 
         #initial API Call
-        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
         
         total_rows = res.json()['data']['totalRows']
 
@@ -462,7 +462,7 @@ class Session:
             json.update({'pageToken': res_data.get('nextPageToken')})
 
             #call page endpoint
-            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
             counter += 1
 
             res_data = res.json()
