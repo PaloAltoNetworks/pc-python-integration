@@ -7,7 +7,7 @@ py_logger = logging.getLogger("pcpi")
 py_logger.setLevel(10)
 
 class CWPSessionManager:
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, verify:bool=True, project_flag:bool=False, logger:object=py_logger):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd: str, verify:bool=True, proxies:dict=None, project_flag:bool=False, logger:object=py_logger):
         """
         Initializes a Prisma Cloud API Session Manager.
 
@@ -25,6 +25,7 @@ class CWPSessionManager:
         self.api_url = api_url
 
         self.verify = verify
+        self.proxies = proxies
         self.project_flag = project_flag
 
         self.cwp_session = {}        
@@ -32,6 +33,6 @@ class CWPSessionManager:
 
 #==============================================================================
     def create_cwp_session(self):
-        session = CWPSession(self.tenant, self.api_url, self.uname, self.passwd, self.verify, self.project_flag, self.logger)
+        session = CWPSession(self.tenant, self.api_url, self.uname, self.passwd, self.verify, self.proxies, self.project_flag, self.logger)
         self.cwp_session = session
         return session

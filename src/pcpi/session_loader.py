@@ -64,7 +64,7 @@ def __c_print(*args, **kwargs):
 
 #==============================================================================
 
-def __validate_cwp_credentials(name, _url, uname, passwd, verify) -> bool:
+def __validate_cwp_credentials(name, _url, uname, passwd, verify, proxies) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
     if the user successfully entered valid credentials.
@@ -83,7 +83,7 @@ def __validate_cwp_credentials(name, _url, uname, passwd, verify) -> bool:
 
     try:
         __c_print('API - Validating credentials')
-        res = requests.request("POST", url, headers=headers, json=payload, verify=verify)
+        res = requests.request("POST", url, headers=headers, json=payload, verify=verify, proxies=proxies)
         print(res.status_code)
 
         if res.status_code == 200:
@@ -103,7 +103,7 @@ def __validate_cwp_credentials(name, _url, uname, passwd, verify) -> bool:
         print()
         return False
 
-def __validate_credentials(a_key, s_key, url, verify) -> bool:
+def __validate_credentials(a_key, s_key, url, verify, proxies) -> bool:
     '''
     This function creates a session with the supplied credentials to test 
     if the user successfully entered valid credentials.
@@ -120,7 +120,7 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
 
     try:
         __c_print('API - Validating credentials')
-        response = requests.request("POST", f'{url}/login', headers=headers, json=payload, verify=verify)
+        response = requests.request("POST", f'{url}/login', headers=headers, json=payload, verify=verify, proxies=proxies)
 
         if response.status_code == 200:
             __c_print('SUCCESS', color='green')
@@ -140,15 +140,15 @@ def __validate_credentials(a_key, s_key, url, verify) -> bool:
         print()
         return False
 
-def __universal_validate_credentials(name, url, _id, secret, verify):
+def __universal_validate_credentials(name, url, _id, secret, verify, proxies):
     if verify.lower() == 'true':
         verify = True
     else:
         verify = False
     if 'prismacloud.io' in url or 'prismacloud.cn' in url:
-        return __validate_credentials(_id, secret, url, verify)
+        return __validate_credentials(_id, secret, url, verify, proxies)
     else:
-        return __validate_cwp_credentials(name, url, _id, secret, verify)
+        return __validate_cwp_credentials(name, url, _id, secret, verify, proxies)
 
 #==============================================================================
 
@@ -193,6 +193,25 @@ def __get_cwp_tenant_credentials():
     verify = input()
     print()
 
+    __c_print('Proxy section. HTTP first, HTTPS second. Leave blank to not use a proxy.', color='blue')
+
+    __c_print('Enter HTTP proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    http_proxy = input()
+    print()
+
+    __c_print('Enter HTTPS proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    https_proxy = input()
+    print()
+    
+    proxies = None
+    if http_proxy or https_proxy:
+        proxies = {
+            'http': http_proxy,
+            'https': https_proxy
+        }
+
     if verify == '':
         verify = True
     elif verify.lower() == 'true':
@@ -202,7 +221,7 @@ def __get_cwp_tenant_credentials():
     else:
         pass
 
-    return name, url, uname, passwd, verify
+    return name, url, uname, passwd, verify, proxies
 
 def __get_config():
     __c_print('Enter Prisma URL. (SaaS EX: https://app.ca.prismacloud.io, On-Prem EX: https://yourdomain.com):', color='blue')
@@ -226,6 +245,25 @@ def __get_config():
     __c_print('Leave blank to use default value (True).', color='yellow')
     verify = input()
     print()
+
+    __c_print('Proxy section. HTTP first, HTTPS second. Leave blank to not use a proxy.', color='yellow')
+
+    __c_print('Enter HTTP proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    http_proxy = input()
+    print()
+
+    __c_print('Enter HTTPS proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    https_proxy = input()
+    print()
+    
+    proxies = None
+    if http_proxy or https_proxy:
+        proxies = {
+            'http': http_proxy,
+            'https': https_proxy
+        }
 
     #If there is non-prisma URL, then ask if its a self hosted project
     project_flag = 'false'
@@ -261,7 +299,7 @@ def __get_config():
         pass
     
 
-    return name, _id, secret, new_url, verify, project_flag
+    return name, _id, secret, new_url, verify, proxies, project_flag
 
 def __get_tenant_credentials():
 
@@ -290,6 +328,25 @@ def __get_tenant_credentials():
     verify = input()
     print()
 
+    __c_print('Proxy section. HTTP first, HTTPS second. Leave blank to not use a proxy.', color='blue')
+
+    __c_print('Enter HTTP proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    http_proxy = input()
+    print()
+
+    __c_print('Enter HTTPS proxy address.', color='blue')
+    __c_print('If you are not using a proxy, leave blank.', color='yellow')
+    https_proxy = input()
+    print()
+    
+    proxies = None
+    if http_proxy or https_proxy:
+        proxies = {
+            'http': http_proxy,
+            'https': https_proxy
+        }
+
     if verify == '':
         verify = True
     elif verify.lower() == 'true':
@@ -300,39 +357,42 @@ def __get_tenant_credentials():
         pass
     
 
-    return name, a_key, s_key, new_url, verify
+    return name, a_key, s_key, new_url, verify, proxies
 
 #==============================================================================
 
-def __build_cwp_session_dict(name, url, uname, passwd, verify):
+def __build_cwp_session_dict(name, url, uname, passwd, verify, proxies):
     session_dict = {
         name: {
             'url': url,
             'uname': uname,
             'passwd': passwd,
-            'verify': verify
+            'verify': verify,
+            'proxies': proxies
             }
     }
     return session_dict
 
-def __build_session_dict(name, a_key, s_key, url, verify):
+def __build_session_dict(name, a_key, s_key, url, verify, proxies):
     session_dict = {
         name: {
             'access_key': a_key,
             'secret_key': s_key,
             'api_url': url,
-            'verify': verify
+            'verify': verify,
+            'proxies': proxies
             }
     }
     return session_dict
 
-def __build_config_json(name, _id, secret, url, verify, project_flag):
+def __build_config_json(name, _id, secret, url, verify, proxies, project_flag):
     session_dict = {
         'name': name,
         'url': url,
         'identity': _id,
         'secret': secret,
         'verify': verify,
+        'proxies': proxies,
         'project_flag': project_flag
     }
     return session_dict
@@ -348,15 +408,15 @@ def __get_min_cwp_credentials_from_user(min_tenants):
         while not valid:
             __c_print('Enter credentials for the console', color='blue')
             print()
-            name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
+            name, url, uname, passwd, verify, proxies = __get_cwp_tenant_credentials()
             
-            valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
+            valid = __validate_cwp_credentials(name, url, uname, passwd, verify, proxies)
             if valid == False:
                 __c_print('FAILED', end=' ', color='red')
                 print('Invalid credentials. Please re-enter your credentials')
                 print()
             else:
-                credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
+                credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify, proxies))
                 tenants_added += 1
         
         if tenants_added >= min_tenants:
@@ -378,15 +438,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
+                name, url, uname, passwd, verify, proxies = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
+                valid = __validate_cwp_credentials(name, url, uname, passwd, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify, proxies))
 
         return credentials
     else:
@@ -395,15 +455,15 @@ def __get_cwp_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the console', color='blue')
                 print()
-                name, url, uname, passwd, verify = __get_cwp_tenant_credentials()
+                name, url, uname, passwd, verify, proxies = __get_cwp_tenant_credentials()
                 
-                valid = __validate_cwp_credentials(name, url, uname, passwd, verify)
+                valid = __validate_cwp_credentials(name, url, uname, passwd, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify))
+                    credentials.append(__build_cwp_session_dict(name, url, uname, passwd, verify, proxies))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -421,15 +481,15 @@ def __get_min_credentials_from_user(min_tenants):
         while not valid:
             __c_print('Enter credentials for the tenant', color='blue')
             print()
-            src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
+            src_name, src_a_key, src_s_key, src_url, verify, proxies = __get_tenant_credentials()
             
-            valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
+            valid = __validate_credentials(src_a_key, src_s_key, src_url, verify, proxies)
             if valid == False:
                 __c_print('FAILED', end=' ', color='red')
                 print('Invalid credentials. Please re-enter your credentials')
                 print()
             else:
-                credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
+                credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify, proxies))
                 tenants_added += 1
         
         if tenants_added >= min_tenants:
@@ -451,15 +511,15 @@ def __get_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the tenant', color='blue')
                 print()
-                src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
+                src_name, src_a_key, src_s_key, src_url, verify, proxies = __get_tenant_credentials()
                 
-                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
+                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
+                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify, proxies))
 
         return credentials
     else:
@@ -468,15 +528,15 @@ def __get_credentials_from_user(num_tenants):
             while not valid:
                 __c_print('Enter credentials for the tenant', color='blue')
                 print()
-                src_name, src_a_key, src_s_key, src_url, verify = __get_tenant_credentials()
+                src_name, src_a_key, src_s_key, src_url, verify, proxies = __get_tenant_credentials()
                 
-                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify)
+                valid = __validate_credentials(src_a_key, src_s_key, src_url, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify))
+                    credentials.append(__build_session_dict(src_name, src_a_key, src_s_key, src_url, verify, proxies))
             
             __c_print('Would you like to add an other tenant? Y/N')
             choice = input().lower()
@@ -496,15 +556,15 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify, project_flag = __get_config()
+                name, _id, secret, url, verify, proxies, project_flag = __get_config()
                 
-                valid = __universal_validate_credentials(name, url, _id, secret, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, proxies, project_flag))
     elif num_tenants == -1 and min_tenants != -1:
         tenant_count = 0
         while True:
@@ -512,15 +572,15 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify, project_flag = __get_config()
+                name, _id, secret, url, verify, proxies, project_flag = __get_config()
                 
-                valid = __universal_validate_credentials(name, url, _id, secret, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, proxies, project_flag))
                     tenant_count +=1
             
             if tenant_count >= min_tenants:
@@ -534,15 +594,15 @@ def __get_config_from_user(num_tenants, min_tenants):
             while not valid:
                 __c_print('Enter Prisma Cloud Credentials', color='blue')
                 print()
-                name, _id, secret, url, verify, project_flag = __get_config()
+                name, _id, secret, url, verify, proxies, project_flag = __get_config()
                 
-                valid = __universal_validate_credentials(name, url, _id, secret, verify)
+                valid = __universal_validate_credentials(name, url, _id, secret, verify, proxies)
                 if valid == False:
                     __c_print('FAILED', end=' ', color='red')
                     print('Invalid credentials. Please re-enter your credentials')
                     print()
                 else:
-                    credentials.append(__build_config_json(name, _id, secret, url, verify, project_flag))
+                    credentials.append(__build_config_json(name, _id, secret, url, verify, proxies, project_flag))
             
             __c_print('Would you like to add another Prisma Cloud credential? Y/N')
             choice = input().lower()
@@ -620,6 +680,7 @@ def onprem_load_from_env(logger=py_logger) -> object:
             verify = True
     except:
         logger.warning('Missing \'PC_API_VERIFY\' environment variable. Using default value...')
+    
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
@@ -1020,8 +1081,14 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
         else:
             verify = verify
 
+        proxies = None
+        try:
+            proxies = blob['proxies']
+        except:
+            pass    
+
         if 'prismacloud.io' in blob['url'] or 'prismacloud.cn' in blob['url']:
-            tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], verify, logger=logger))
+            tenant_sessions.append(SaaSSessionManager(blob['name'], blob['identity'], blob['secret'], blob['url'], verify, proxies, logger=logger))
         else:
             project_flag = False
             project_flag_in = blob.get('project_flag', None)
@@ -1029,7 +1096,7 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
                 if project_flag_in.lower().strip() == 'true':
                     project_flag = True
 
-            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], verify, project_flag, logger=logger))
+            tenant_sessions.append(CWPSessionManager(blob['name'], blob['url'], blob['identity'], blob['secret'], verify, proxies, project_flag, logger=logger))
 
     return tenant_sessions
 
@@ -1055,7 +1122,7 @@ def load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger):
 
     return tenant_sessions
 
-def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY', project_flag_name='PRISMA_PCPI_PROJECT_FLAG',  logger=py_logger):
+def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID', secret_name='PRISMA_PCPI_SECRET', api_url_name='PRISMA_PCPI_URL', verify_name='PRISMA_PCPI_VERIFY', http_name='PC_HTTP_PROXY', https_name='PC_HTTPS_PROXY', project_flag_name='PRISMA_PCPI_PROJECT_FLAG',  logger=py_logger):
     error_exit = False
 
     name = 'Tenant'
@@ -1095,7 +1162,26 @@ def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI
         if verify.lower() == 'true':
             verify = True
     except:
-        logger.warning(f'Missing \'{verify_name}\' environment variable. Using default value...')
+        logger.warning(f'\'{verify_name}\' not set. Using default value...')
+
+    proxies = None
+    http_proxy = None
+    https_proxy = None
+    try:
+        http_proxy = os.environ[http_name]
+    except:
+        logger.warning(f'\'{http_name}\' not set. No HTTP proxy will be used.')
+
+    try:
+        https_proxy = os.environ[https_name]
+    except:
+        logger.warning(f'\'{https_name}\' not set. No HTTPS proxy will be used.')
+
+    if http_proxy or https_proxy:
+        proxies = {
+            'http': http_proxy,
+            'https': https_proxy
+        }
     
     project_flag =  False
     try:
@@ -1103,13 +1189,13 @@ def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI
         if project_flag.lower().strip() == 'true':
             project_flag = True
     except:
-        logger.warning(f'Missing \'{project_flag_name}\' environment variable. Using default value...')
+        logger.warning(f'\'{project_flag_name}\' not set. Using default value...')
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
         exit()
 
     if 'prismacloud.io' in api or 'prismacloud.cn' in api:
-        return SaaSSessionManager(name, a_key, s_key, api, verify, logger=logger)
+        return SaaSSessionManager(name, a_key, s_key, api, verify, proxies, logger=logger)
     else:
-        return CWPSessionManager(name, api, a_key, s_key, verify, project_flag, logger=logger)
+        return CWPSessionManager(name, api, a_key, s_key, verify, proxies, project_flag, logger=logger)

@@ -13,7 +13,7 @@ import time
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class SaaSCWPSession(Session):
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger, cspm_session={}):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify: bool, proxies: dict, logger, cspm_session={}):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -31,6 +31,7 @@ class SaaSCWPSession(Session):
         self.s_key = s_key
         self.api_url = api_url
         self.verify = verify
+        self.proxies = proxies
 
         self.token_time_stamp = 0
 
@@ -61,7 +62,7 @@ class SaaSCWPSession(Session):
 
 #==============================================================================
     def __get_cspm_session(self):
-        self.cspm_session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.logger)
+        self.cspm_session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.proxies, self.logger)
         self.cspm_token = self.cspm_session.token
     
     def __cspm_login(self):
@@ -101,7 +102,7 @@ class SaaSCWPSession(Session):
         try:
             start_time = time.time()
             self.logger.debug(url)
-            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify, proxies=self.proxies)
             end_time = time.time()
             time_completed = round(end_time-start_time, 3)
             

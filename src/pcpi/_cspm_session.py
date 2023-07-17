@@ -11,7 +11,7 @@ import time
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CSPMSession(Session):
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify, logger):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify: bool, proxies: dict, logger):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -28,6 +28,7 @@ class CSPMSession(Session):
         self.s_key = s_key
         self.api_url = api_url
         self.verify = verify
+        self.proxies = proxies
 
         self.token_time_stamp = 0
 
@@ -68,7 +69,7 @@ class CSPMSession(Session):
         try:
             start_time = time.time()
             self.logger.debug(url)
-            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify, proxies=self.proxies)
             end_time = time.time()
             time_completed = round(end_time-start_time,3)
 
@@ -91,7 +92,7 @@ class CSPMSession(Session):
             try:
                 start_time = time.time()
                 self.logger.debug(self.api_url + '/auth_token/extend')
-                res = requests.request("GET", self.api_url + '/auth_token/extend', headers=self.headers, verify=self.verify)
+                res = requests.request("GET", self.api_url + '/auth_token/extend', headers=self.headers, verify=self.verify, proxies=self.proxies)
                 end_time = time.time()
                 time_completed = round(end_time-start_time,3)
                 self.token_time_stamp = time.time()

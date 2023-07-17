@@ -208,7 +208,7 @@ class Session:
 
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -228,7 +228,7 @@ class Session:
                     self._api_refresh_wrapper()
 
                 self.logger.debug(f'{url}')
-                res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
+                res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     log_message = ''
@@ -286,7 +286,7 @@ class Session:
                     self.logger.warning(f'Retrying request')
                     self.logger.debug(f'{url}')
 
-                    res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv)
+                    res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
                     retries += 1
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
@@ -356,7 +356,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -364,6 +364,9 @@ class Session:
         '''
         if verify == None:
             verify = self.verify
+
+        if proxies == None:
+            proxies = self.proxies
 
         #If the CWP Session is a project, auto add project id query string
         try:
@@ -387,11 +390,15 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
 
-    def config_search_request(self, json: dict, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def config_search_request(self, json: dict, verify=None, proxies=None, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
             verify = self.verify
+
+        if proxies == None:
+            proxies = self.proxies
+
         
         limit = 2000#Max limit value is 100,000
         
@@ -399,7 +406,7 @@ class Session:
         json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
 
         #initial API Call
-        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, proxies=proxies, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
 
         total_rows = 0
         complete_res_list = []
@@ -419,7 +426,7 @@ class Session:
             json.update({'pageToken': res_data.get('nextPageToken')})
 
             #call page endpoint
-            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, proxies=proxies, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
             counter += 1
 
             #update res_data with the paginated response
@@ -436,9 +443,13 @@ class Session:
 
         return complete_res_dict
 
-    def config_search_request_function(self, json, function, verify=None, redlock_ignore: list=None, status_ignore: list=[]):
+    def config_search_request_function(self, json, function, verify=None, proxies=None, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
             verify = self.verify
+
+        if proxies == None:
+            proxies = self.proxies
+
         
         limit = 2000#Max limit value is 100,000
         
@@ -446,7 +457,7 @@ class Session:
         json.update({"heuristicSearch": True, "limit": limit, "withResourceJson": True})
 
         #initial API Call
-        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+        res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config', json=json, verify=verify, proxies=proxies, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
         
         total_rows = res.json()['data']['totalRows']
 
@@ -462,7 +473,7 @@ class Session:
             json.update({'pageToken': res_data.get('nextPageToken')})
 
             #call page endpoint
-            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
+            res = self.__api_call_wrapper('POST', f'{self.api_url}/search/config/page', json=json, verify=verify, proxies=proxies, redlock_ignore=redlock_ignore, status_ignore=status_ignore)
             counter += 1
 
             res_data = res.json()
@@ -472,7 +483,7 @@ class Session:
 
         return total_rows
 
-    def __request_wrapper(self, method, url, headers, json, data, params, verify, acceptCsv):
+    def __request_wrapper(self, method, url, headers, json, data, params, verify, proxies, acceptCsv):
         if acceptCsv == True: #CSPM Support Only
             headers.update({
                 'Accept': 'text/csv'
@@ -481,14 +492,14 @@ class Session:
         r = self.empty_res
 
         start_time = time.time()
-        r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+        r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify, proxies=proxies)
         end_time = time.time()
         time_completed = round(end_time-start_time,3)
 
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 start_time = time.time()
-                r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify)
+                r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify, proxies=proxies)
                 end_time = time.time()
                 time_completed = round(end_time-start_time,3)
 

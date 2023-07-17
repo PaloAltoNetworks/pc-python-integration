@@ -10,7 +10,7 @@ py_logger.setLevel(10)
 from ._session_types import CSPMSession, SaaSCWPSession
 
 class SaaSSessionManager:
-    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify=True, logger=py_logger):
+    def __init__(self, tenant_name: str, a_key: str, s_key: str, api_url: str, verify=True, proxies:dict=None, logger=py_logger):
         """
         Initializes a Prisma Cloud API Session Manager.
 
@@ -28,6 +28,7 @@ class SaaSSessionManager:
         self.api_url = api_url
 
         self.verify = verify
+        self.proxies = proxies
 
         self.cspm_session = {}
         self.saas_cwp_session = {}
@@ -36,18 +37,18 @@ class SaaSSessionManager:
 
 #==============================================================================
     def create_cspm_session(self):
-        session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, logger=self.logger)
+        session = CSPMSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.proxies, logger=self.logger)
         self.cspm_session = session
         return session
     
     def create_cwp_session(self):
         if self.cspm_session:
-            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, logger=self.logger, cspm_session=self.cspm_session)
+            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.proxies, logger=self.logger, cspm_session=self.cspm_session)
             self.saas_cwp_session = session
             return session
         else:
             self.create_cspm_session()
-            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, logger=self.logger, cspm_session=self.cspm_session)
+            session = SaaSCWPSession(self.tenant, self.a_key, self.s_key, self.api_url, self.verify, self.proxies, logger=self.logger, cspm_session=self.cspm_session)
             self.saas_cwp_session = session
             return session
 

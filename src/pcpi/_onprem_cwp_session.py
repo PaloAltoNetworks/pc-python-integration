@@ -14,7 +14,7 @@ import time
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class CWPSession(Session):
-    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify:bool, project_flag:bool, logger: object):
+    def __init__(self, tenant_name: str, api_url: str, uname: str, passwd:str, verify:bool, proxies: dict, project_flag:bool, logger: object):
         """
         Initializes a Prisma Cloud API session for a given tenant.
 
@@ -32,6 +32,7 @@ class CWPSession(Session):
         self.uname = uname
         self.passwd = passwd
         self.verify = verify
+        self.proxies = proxies
         self.project_flag = project_flag
 
         self.token_time_stamp = 0
@@ -77,7 +78,7 @@ class CWPSession(Session):
         try:
             start_time = time.time()
             self.logger.debug(url)
-            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify, proxies=self.proxies)
             end_time = time.time()
             time_completed = round(end_time-start_time, 3)
 
