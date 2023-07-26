@@ -142,13 +142,11 @@ load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI_ID'
 session_managers = session_loader.load_config() 
 #load_config() returns either a SaaS session manager or On-Prem session manager based on credentials used, namely the api url.
 my_session_manager = session_managers[0]
-my_onprem_session_manager = session_managers[1]
 
 #Session managers return session objects
 #-- SESSION MANAGER FUNCTIONS --
 cspm_session = my_session_manager.create_cspm_session()
 cwp_session = my_session_manager.create_cwp_session()
-onprem_cwp_session = my_onprem_session_manager.create_cwp_session()
 
 #-- SESSION FUNCTION --
 #Session objects are used to make API requests
@@ -288,13 +286,13 @@ cwp_session = session_manager.create_cwp_session()
 ```
 
 ```python
-from pcpi import onprem_session_manager
+from pcpi import session_manager
 import logging
 
 py_logger = logging.getLogger()
 py_logger.setLevel(10)
 
-session_manager = onprem_session_manager.CWPSessionManager(
+session_manager = session_manager.CWPSessionManager(
     tenant_name='My PC Tenant',
     uname='xxxxxxxxxxxxxxxxxxxxxxxxxx',
     passwd='xxxxxxxxxxxxxxxxxxxxxxxxxx',
