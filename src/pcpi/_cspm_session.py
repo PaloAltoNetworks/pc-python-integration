@@ -85,6 +85,7 @@ class CSPMSession(Session):
     def _expired_login(self) -> None:
         self.logger.error('FAILED')
         self.logger.warning('Invalid Login Credentials. JWT not generated. Exiting...')
+        print('Invalid Creds. Exiting...')
         exit()
 
     def _api_refresh(self) -> None:

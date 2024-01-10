@@ -684,6 +684,7 @@ def onprem_load_from_env(logger=py_logger) -> object:
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
+        print('Missing Env Variables. Exiting...')
         exit()
 
     return CWPSessionManager(name, api_url, uname, passwd, verify, False, logger)
@@ -812,6 +813,7 @@ def onprem_load_from_file(file_path='console_credentials.yml', logger=py_logger)
         return tenant_sessions[0]
     except:
         logger.error('Error - No credentials found. Exiting...')
+        print('Missing Credentials. Exiting...')
         exit()
 
 def load_min_from_file(min_tenants, file_path='tenant_credentials.yml', logger=py_logger) -> list:
@@ -934,6 +936,7 @@ def load_from_file(file_path='tenant_credentials.yml', logger=py_logger) -> list
         return tenant_sessions[0]
     except:
         logger.error('Error - No credentials found. Exiting...')
+        print('No Creds Found. Exiting...')
         exit()
 
 def load_from_env(logger=py_logger) -> object:
@@ -980,6 +983,7 @@ def load_from_env(logger=py_logger) -> object:
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
+        print('Missing Environment variables. Exiting...')
         exit()
 
     return SaaSSessionManager(name, a_key, s_key, api_url, verify, logger)
@@ -1047,6 +1051,7 @@ def load_from_user(logger=py_logger) -> list:
 def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
     if num_tenants != -1 and min_tenants != -1:
         logger.error('ERROR: Incompatible options. Exiting...')
+        print('Incompatible Options. Exiting...')
         exit()
 
     if file_path == '':
@@ -1068,8 +1073,11 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
     with open(config_path, 'r') as infile:
         try:
             config_data = json.load(infile)
-        except:
+        except Exception as e:
             logger.error('Failed to load credentials file. Exiting...')
+            logger.log(e)
+            print('Credential File Load Error. Exiting...')
+            print(e)
             exit()
 
     for blob in config_data:
@@ -1103,6 +1111,7 @@ def load_config(file_path='', num_tenants=-1, min_tenants=-1, logger=py_logger):
 def load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger):
     if num_tenants != -1 and min_tenants != -1:
         logger.error('ERROR: Incompatible options. Exiting...')
+        print('Incompatible cmd arguments. Exiting...')
         exit()
 
     config = __get_config_from_user(num_tenants, min_tenants)
@@ -1193,6 +1202,7 @@ def load_config_env(prisma_name='PRISMA_PCPI_NAME', identifier_name='PRISMA_PCPI
 
     if error_exit:
         logger.info('Missing required environment variables. Exiting...')
+        print('Missing env variables. Exiting...')
         exit()
 
     if 'prismacloud.io' in api or 'prismacloud.cn' in api:

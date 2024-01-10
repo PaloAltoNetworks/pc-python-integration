@@ -67,6 +67,7 @@ class Session:
                             self.logger.warning('1) Ensure Access Key has proper permission.')
                             self.logger.warning('2) Ensure Prisma Cloud license is valid.')
                             self.logger.warning('3) If using a CWPP Project, ensure project name is valid in credential configurations.')
+                            print('Repeat 401 Error. Exiting...')
                             exit()
 
                         self._expired_login()
@@ -93,6 +94,7 @@ class Session:
                 
                 if retries == self.retries:
                     self.logger.error('ERROR. Max retires exceeded on API Login. Exiting...')
+                    print('API Login Max Retries. Exiting...')
                     exit()
 
                 #Update token and headers
@@ -112,6 +114,7 @@ class Session:
 
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
+                print('Interrupt signal. Exiting...')
                 exit()
             except Exception as e:
                 self.logger.error(e)
@@ -176,6 +179,7 @@ class Session:
                     
                     if retries == self.retries:
                         self.logger.error('ERROR. Max retires exceeded on JWT refresh. Exiting...')
+                        print('JWT Refresh max retry. Exiting...')
                         exit()
 
                     #Update token and headers
@@ -196,6 +200,7 @@ class Session:
 
                 except KeyboardInterrupt:
                     self.logger.error('Keyboard Interrupt. Exiting...')
+                    print('Interrupt signal. Exiting...')
                     exit()
                 except Exception as e:
                     self.logger.error(e)
@@ -276,6 +281,7 @@ class Session:
                             self.logger.warning('1) Ensure Access Key has proper permission.')
                             self.logger.warning('2) Ensure Prisma Cloud license is valid.')
                             self.logger.warning('3) If using a CWPP Project, ensure project name is valid in credential configurations.')
+                            print('401 Error. Exiting...')
                             exit()
 
                         self.logger.error(f'FAILED {self.expired_code} - {time_completed} seconds')
@@ -343,6 +349,7 @@ class Session:
                 return res
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
+                print('Interrupt Signal. Exiting...')
                 exit()
             except Exception as e:
                 #self.logger.error(e, f'- {time_completed} seconds')
@@ -507,6 +514,7 @@ class Session:
                 return [r, time_completed]
             except KeyboardInterrupt:
                 self.logger.error('Keyboard Interrupt. Exiting...')
+                print('Interrupt Signal. Exiting...')
                 exit()
             except Exception as e:
                 self.logger.error(e)
