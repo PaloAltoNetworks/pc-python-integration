@@ -74,9 +74,11 @@ class CSPMSession(Session):
             time_completed = round(end_time-start_time,3)
 
             self.token_time_stamp = time.time()
-        except:
+        except Exception as e:
+            
             self.logger.error('Failed to connect to API.')
             self.logger.warning('Make sure any offending VPNs are disabled.')
+            self.logger.error(e)
 
         return [res, time_completed]
 
