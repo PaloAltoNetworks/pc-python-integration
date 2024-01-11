@@ -75,6 +75,7 @@ class CWPSession(Session):
         self.logger.debug('API - Generating CWP session token.')
 
         res = object()
+        time_completed = 0
         try:
             start_time = time.time()
             self.logger.debug(url)

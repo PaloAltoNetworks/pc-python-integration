@@ -38,6 +38,7 @@ class Session:
             requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
         res = self.empty_res
+        time_completed = 0
         while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 res, time_completed = self._api_login()
@@ -129,6 +130,7 @@ class Session:
         res = self.empty_res
 
         refresh_func = getattr(self, "_api_refresh", None)
+        time_completed = 0
         if not callable(refresh_func):
             return self._api_login_wrapper()
         else:
@@ -226,6 +228,7 @@ class Session:
         Respose from API call.
         """
         res = self.empty_res
+        time_completed = 0
         while res == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 if time.time() - self.token_time_stamp >= self.token_time:
@@ -501,6 +504,7 @@ class Session:
         start_time = time.time()
         r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify, proxies=proxies)
         end_time = time.time()
+        time_completed = 0
         time_completed = round(end_time-start_time,3)
 
         while r == self.empty_res and self.u_count < self.unknown_error_max:

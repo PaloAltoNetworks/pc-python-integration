@@ -121,6 +121,7 @@ class SaaSCWPSession(Session):
         self.logger.debug('API - Refreshing SaaS session token.')
 
         res = object()
+        time_completed = 0
         try:
             res, time_completed = self.cspm_session._api_refresh()
             self.token_time_stamp = time.time()

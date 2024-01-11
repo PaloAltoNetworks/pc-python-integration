@@ -66,6 +66,7 @@ class CSPMSession(Session):
 
         self.logger.debug('API - Generating CSPM session token.')
         res = object()
+        time_completed = 0
         try:
             start_time = time.time()
             self.logger.debug(url)
@@ -92,6 +93,7 @@ class CSPMSession(Session):
             self.logger.debug('API - Refreshing SaaS session token.')
 
             res = object()
+            time_completed = 0
             try:
                 start_time = time.time()
                 self.logger.debug(self.api_url + '/auth_token/extend')
