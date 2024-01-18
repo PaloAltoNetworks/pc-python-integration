@@ -92,6 +92,7 @@ class CWPSession(Session):
 
     def _expired_login(self) -> None:
         self.logger.error('FAILED')
-        self.logger.warning('Invalid Login Credentials. JWT not generated. Exiting...')
+        self.logger.warning('Invalid Login Credentials. JWT not generated.')
+        self.logger.warning('Update your credentials file locally or in `~/.prismacloud`. Exiting...')
         # print('Invalid Creds. Exiting...')
         exit()

@@ -85,7 +85,8 @@ class CSPMSession(Session):
 
     def _expired_login(self) -> None:
         self.logger.error('FAILED')
-        self.logger.warning('Invalid Login Credentials. JWT not generated. Exiting...')
+        self.logger.warning('Invalid Login Credentials. JWT not generated.')
+        self.logger.warning('Update your custom credentials file or the default file in `~/.prismacloud`. Exiting...')
         # print('Invalid Creds. Exiting...')
         exit()
 

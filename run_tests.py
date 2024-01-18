@@ -31,14 +31,21 @@ def load_environment():
                 verify = True
         except:
             pass
-        
+            
+        proxies = cred['proxies']
+        https_proxy = ''
+        http_proxy = ''
+        if proxies:
+            http_proxy = proxies.get('http','')
+            https_proxy = proxies.get('https','')
+
         os.environ[f'PC_TENANT_NAME{index}'] = tenant
         os.environ[f'PC_TENANT_API{index}'] = api_url
         os.environ[f'PC_TENANT_A_KEY{index}'] = uname
         os.environ[f'PC_TENANT_S_KEY{index}'] = passwd
         os.environ[f'PC_TENANT_VERIFY{index}'] = str(verify)
-        os.environ[f'PC_HTTP_PROXY{index}'] = cred['http_proxy']
-        os.environ[f'PC_HTTPS_PROXY{index}'] = cred['https_proxy']
+        os.environ[f'PC_HTTP_PROXY{index}'] = http_proxy
+        os.environ[f'PC_HTTPS_PROXY{index}'] = https_proxy
 
     
 #UNIT TESTS====================================================================
