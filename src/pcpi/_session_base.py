@@ -215,7 +215,7 @@ class Session:
 
 
 #==============================================================================
-    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, verify=True, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
+    def __api_call_wrapper(self, method: str, url: str, json: dict=None, data: dict=None, params: dict=None, files: dict=None, verify=True, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         """
         A wrapper around all API calls that handles token generation, retrying
         requests and API error console output logging.
@@ -236,7 +236,7 @@ class Session:
                     self._api_refresh_wrapper()
 
                 self.logger.debug(f'{url}')
-                res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
+                res,time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, files=files, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
                     log_message = ''
@@ -366,7 +366,7 @@ class Session:
 
     #==============================================================================
 
-    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, verify=None, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
+    def request(self, method: str, endpoint_url: str, json: dict=None, data: dict=None, params: dict=None, files: dict=None, verify=None, proxies=None, acceptCsv=False, redlock_ignore: list=None, status_ignore: list=[], custom_log='', custom_error_message=''):
         '''
         Function for calling the PC API using this session manager. Accepts the
         same arguments as 'requests.request' minus the headers argument as 
@@ -400,7 +400,7 @@ class Session:
         url = f'{self.api_url}{endpoint_url}'
 
         #Call wrapper
-        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
+        return self.__api_call_wrapper(method, url, json=json, data=data, params=params, files=files,verify=verify, proxies=proxies, acceptCsv=acceptCsv, redlock_ignore=redlock_ignore, status_ignore=status_ignore, custom_log=custom_log, custom_error_message=custom_error_message)
 
     def config_search_request(self, json: dict, verify=None, proxies=None, redlock_ignore: list=None, status_ignore: list=[]):
         if verify == None:
@@ -493,7 +493,7 @@ class Session:
 
         return total_rows
 
-    def __request_wrapper(self, method, url, headers, json, data, params, verify, proxies, acceptCsv):
+    def __request_wrapper(self, method, url, headers, json, data, params, files, verify, proxies, acceptCsv):
         if acceptCsv == True: #CSPM Support Only
             headers.update({
                 'Accept': 'text/csv'
@@ -502,7 +502,7 @@ class Session:
         r = self.empty_res
 
         start_time = time.time()
-        r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify, proxies=proxies)
+        r = requests.request(method, url, headers=headers, json=json, data=data, params=params, files=files, verify=verify, proxies=proxies)
         end_time = time.time()
         time_completed = 0
         time_completed = round(end_time-start_time,3)
@@ -510,7 +510,7 @@ class Session:
         while r == self.empty_res and self.u_count < self.unknown_error_max:
             try:
                 start_time = time.time()
-                r = requests.request(method, url, headers=headers, json=json, data=data, params=params, verify=verify, proxies=proxies)
+                r = requests.request(method, url, headers=headers, json=json, data=data, params=params, files=files, verify=verify, proxies=proxies)
                 end_time = time.time()
                 time_completed = round(end_time-start_time,3)
 
