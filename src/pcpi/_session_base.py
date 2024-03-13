@@ -295,7 +295,7 @@ class Session:
                     self.logger.warning(f'Retrying request')
                     self.logger.debug(f'{url}')
 
-                    res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
+                    res, time_completed = self.__request_wrapper(method, url, headers=self.headers, json=json, data=data, params=params, files=files, verify=verify, proxies=proxies, acceptCsv=acceptCsv)
                     retries += 1
                 
                 if res.status_code in self.success_status or res.status_code in status_ignore:
