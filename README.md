@@ -264,6 +264,8 @@ If you want to take control on how credentials are stored/loaded into your scrip
 
 This still creates the same Prisma Cloud session object that you use for API requests.
 
+The logger object is optional. You can use PyLogger or Loguru with PCPI
+
 **EXAMPLES**
 
 ```python
@@ -286,18 +288,15 @@ cwp_session = session_manager.create_cwp_session()
 ```
 
 ```python
-from pcpi import session_manager
+from pcpi import onprem_session_manager
 import logging
 
-py_logger = logging.getLogger()
-py_logger.setLevel(10)
 
-session_manager = session_manager.CWPSessionManager(
+session_manager = onprem_session_manager.CWPSessionManager(
     tenant_name='My PC Tenant',
     uname='xxxxxxxxxxxxxxxxxxxxxxxxxx',
     passwd='xxxxxxxxxxxxxxxxxxxxxxxxxx',
-    api_url='https://<yourselfhostedurl>',
-    logger=py_logger
+    api_url='https://<yourselfhostedurl>'
 )
 
 onprem_cwp_session = session_manager.create_cwp_session()
