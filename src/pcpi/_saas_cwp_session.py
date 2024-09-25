@@ -140,11 +140,16 @@ class SaaSCWPSession(Session):
         self.__cspm_login()
 
     def _api_refresh(self) -> None:
-        self.logger.debug("API - Refreshing SaaS session token.")
+        # res, time = self._api_login(self)
+
+        self.logger.debug(
+            "API - Refreshing SaaS CWP session token _saas_cpw_session.py."
+        )
 
         res = object()
         time_completed = 0
         try:
+            res, time_completed = _api_login(self)
             res, time_completed = self.cspm_session._api_refresh()
             self.token_time_stamp = time.time()
         except:

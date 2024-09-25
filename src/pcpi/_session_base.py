@@ -65,7 +65,7 @@ class Session:
                         self.logger.warning("Increasing wait time.")
 
                     elif res.status_code == self.expired_code:
-                        if encountered_401 == True:
+                        if encountered_401:
                             self.logger.error("ERROR - Can not perform API operations")
                             self.logger.warning("Steps to troubleshoot: ")
                             self.logger.warning(
@@ -722,4 +722,3 @@ class Session:
                 self.u_count += 1
 
         return [r, time_completed]
-
