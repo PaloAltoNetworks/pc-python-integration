@@ -497,6 +497,7 @@ def load_config(file_path="", num_tenants=-1, min_tenants=-1, logger=py_logger):
                     blob["identity"],
                     blob["secret"],
                     blob["url"],
+                    blob["tl_url"],
                     verify,
                     proxies,
                     logger=logger,
@@ -512,7 +513,7 @@ def load_config(file_path="", num_tenants=-1, min_tenants=-1, logger=py_logger):
             tenant_sessions.append(
                 CWPSessionManager(
                     blob["name"],
-                    blob["url"],
+                    blob["tl_url"],
                     blob["identity"],
                     blob["secret"],
                     verify,
@@ -556,7 +557,7 @@ def load_config_user(num_tenants=-1, min_tenants=-1, logger=py_logger):
             tenant_sessions.append(
                 CWPSessionManager(
                     tenant["name"],
-                    tenant["url"],
+                    tenant["tl_url"],
                     tenant["identity"],
                     tenant["secret"],
                     tenant["verify"],

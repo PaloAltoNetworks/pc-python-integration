@@ -21,7 +21,6 @@ class SaaSCWPSession(Session):
         a_key: str,
         s_key: str,
         api_url: str,
-        tl_url: str,
         verify: bool,
         proxies: dict,
         logger,
@@ -34,7 +33,7 @@ class SaaSCWPSession(Session):
         tenant_name -- Name of tenant associated with session
         a_key -- Tenant Access Key
         s_key -- Tenant Secret Key
-        tl_url -- API URL Tenant is hosted on
+        api_url -- API URL Tenant is hosted on
         """
 
         super().__init__(logger)
@@ -43,7 +42,6 @@ class SaaSCWPSession(Session):
         self.a_key = a_key
         self.s_key = s_key
         self.api_url = api_url
-        self.tl_url = tl_url
         self.verify = verify
         self.proxies = proxies
 
@@ -60,7 +58,7 @@ class SaaSCWPSession(Session):
             self.cspm_session = cspm_session
             self.cspm_token = self.cspm_session.token
 
-        # self.tl_url = self.__cwpp_metadata(self.cspm_session)
+        # self.api_url = self.__cwpp_metadata(self.cspm_session)
 
         self.auth_key = "Authorization"
         self.auth_style = "Bearer "
@@ -92,6 +90,7 @@ class SaaSCWPSession(Session):
 
     def __cwpp_metadata(self, cspm_session):
         res = cspm_session.request("GET", "meta_info")
+        print(res)
         compute_url = res.json()["twistlockUrl"]
 
         return compute_url
@@ -107,7 +106,7 @@ class SaaSCWPSession(Session):
 
         # Build request
         url = f"{self.api_url}/api/v1/authenticate"
-
+        self.logger.debug("api url %s", self.api_url)
         headers = {"content-type": "application/json; charset=UTF-8"}
 
         payload = {"username": None, "password": None, "token": self.cspm_token}
@@ -153,4 +152,3 @@ class SaaSCWPSession(Session):
             self.logger.warning("Make sure any offending VPNs are disabled.")
 
         return [res, time_completed]
-
