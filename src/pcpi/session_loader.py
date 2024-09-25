@@ -573,6 +573,7 @@ def load_config_env(
     identifier_name="PRISMA_PCPI_ID",
     secret_name="PRISMA_PCPI_SECRET",
     api_url_name="PRISMA_PCPI_URL",
+    tl_url_name="PRISMA_PCPI_URL",
     verify_name="PRISMA_PCPI_VERIFY",
     http_name="PC_HTTP_PROXY",
     https_name="PC_HTTPS_PROXY",
@@ -596,6 +597,15 @@ def load_config_env(
         api = __validate_url(api_url)
     except:
         logger.error(f"Missing '{api_url_name}' environment variable.")
+        error_exit = True
+
+    tl_url = ""
+    tl_api = None
+    try:
+        tl_url = os.environ[tl_url_name]
+        tl_api = __validate_url(tl_url)
+    except:
+        logger.error(f"Missing '{tl_url_name}' environment variable.")
         error_exit = True
 
     a_key = None
