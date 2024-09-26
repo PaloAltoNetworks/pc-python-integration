@@ -131,6 +131,8 @@ class SaaSCWPSession(Session):
                 verify=self.verify,
                 proxies=self.proxies,
             )
+            data = res.json()
+            self.cwp_token = data["token"]
             end_time = time.time()
             time_completed = round(end_time - start_time, 3)
 
@@ -142,8 +144,8 @@ class SaaSCWPSession(Session):
         return [res, time_completed]
 
     def _expired_login(self) -> None:
-        self.logger.warning("CSPM session expired. Generating new session.")
-        self.__cspm_login()
+        self.logger.warning("CWP session expired. Generating new session.")
+        self._api_login()
 
     def _api_refresh(self) -> None:
         # res, time = self._api_login(self)
@@ -151,15 +153,4 @@ class SaaSCWPSession(Session):
         self.logger.debug(
             "API - Refreshing SaaS CWP session token _saas_cpw_session.py."
         )
-
-        res = object()
-        time_completed = 0
-        try:
-            res, time_completed = _api_login(self)
-            res, time_completed = self.cspm_session._api_refresh()
-            self.token_time_stamp = time.time()
-        except:
-            self.logger.error("Failed to connect to API.")
-            self.logger.warning("Make sure any offending VPNs are disabled.")
-
-        return [res, time_completed]
+        return self._api_login()
