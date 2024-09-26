@@ -109,7 +109,11 @@ class SaaSCWPSession(Session):
         self.logger.debug("api url %s", self.api_url)
         headers = {"content-type": "application/json; charset=UTF-8"}
 
-        payload = {"username": None, "password": None, "token": self.cspm_token}
+        payload = {
+            "username": self.a_key,
+            "password": self.s_key,
+            # "token": self.cspm_token,
+        }
 
         self.logger.debug(
             "API - Generating SaaS CWPP session token. payload value %s", payload
