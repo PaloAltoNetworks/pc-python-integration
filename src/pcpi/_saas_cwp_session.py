@@ -111,12 +111,14 @@ class SaaSCWPSession(Session):
 
         payload = {"username": None, "password": None, "token": self.cspm_token}
 
-        self.logger.debug("API - Generating SaaS CWPP session token.")
+        self.logger.debug(
+            "API - Generating SaaS CWPP session token. payload value %s", payload
+        )
 
         res = object()
         try:
             start_time = time.time()
-            self.logger.debug(url)
+            self.logger.debug("_api_login calling %s", url)
             res = requests.request(
                 "POST",
                 url,
