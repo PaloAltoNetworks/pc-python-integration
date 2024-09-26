@@ -1,7 +1,17 @@
-#Uncomment a section to test
+# Uncomment a section to test
+import sys
+import os
 
+# Step 1: Determine the directory containing your package
+package_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "./src"))
+
+# Step 2: Add the directory to the Python path
+if package_dir not in sys.path:
+    sys.path.append(package_dir)
+
+# Step 3: Import your package
 ###INSTALLED FROM PYPI EXAMPLES
-#Minimum setup-----------------------------------------------------------------
+# Minimum setup-----------------------------------------------------------------
 # from pcpi import session_loader
 
 # session_managers = session_loader.load_config()
@@ -11,7 +21,7 @@
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
-#Recommended setup-------------------------------------------------------------
+# Recommended setup-------------------------------------------------------------
 # from pcpi import session_loader
 # import loguru
 
@@ -22,7 +32,7 @@
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
-#CSPM and CWP------------------------------------------------------------------
+# CSPM and CWP------------------------------------------------------------------
 # from pcpi import session_loader
 # import loguru
 
@@ -37,10 +47,10 @@
 
 # print('--------------')
 
-# res2 = cwp_session.request('GET', 'api/v1/credentials')
+# res2 = cwp_session.request("GET", "api/v1/credentials")
 # print(res2.json())
 
-#Session self healing----------------------------------------------------------
+# Session self healing----------------------------------------------------------
 # from pcpi import session_loader
 # import loguru
 
@@ -54,7 +64,7 @@
 # res = cwp_session.request('GET', 'api/v1/credentials')
 # print(res.json())
 
-#Error and debugging output----------------------------------------------------------
+# Error and debugging output----------------------------------------------------------
 # from pcpi import session_loader
 # import loguru
 
@@ -70,7 +80,7 @@
 
 ###LOCAL CLONED REPO EXAMPLES==================================================
 
-#Minimum setup-----------------------------------------------------------------
+# Minimum setup-----------------------------------------------------------------
 # from src.pcpi import session_loader
 
 # session_managers = session_loader.load_config()
@@ -80,7 +90,7 @@
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
-#Recommended setup-------------------------------------------------------------
+# Recommended setup-------------------------------------------------------------
 # from src.pcpi import session_loader
 # import loguru
 
@@ -91,7 +101,7 @@
 # res = cspm_session.request('GET', '/cloud')
 # print(res.json())
 
-#CSPM and CWP------------------------------------------------------------------
+# CSPM and CWP------------------------------------------------------------------
 # from src.pcpi import session_loader
 # import loguru
 
@@ -109,7 +119,7 @@
 # res2 = cwp_session.request('GET', 'api/v1/credentials')
 # print(res2.json())
 
-#Session self healing----------------------------------------------------------
+# Session self healing----------------------------------------------------------
 # from src.pcpi import session_loader
 # import loguru
 
@@ -137,7 +147,7 @@
 # res = cwp_session.request('GET', 'api/v9/credentials')
 
 
-#Heuristic Search--------------------------------------------------------------
+# Heuristic Search--------------------------------------------------------------
 # #Change RQL query as needed
 # query = "config from cloud.resource where resource.status = Active AND api.name = 'aws-ec2-describe-instances'"
 
