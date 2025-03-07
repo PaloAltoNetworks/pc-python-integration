@@ -102,7 +102,8 @@ class SaaSCWPSession(Session):
         try:
             start_time = time.time()
             self.logger.debug(url)
-            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify, proxies=self.proxies)
+            res = requests.request("POST", url, headers=headers, json=payload, verify=self.verify, proxies=self.proxies)            
+
             end_time = time.time()
             time_completed = round(end_time-start_time, 3)
             

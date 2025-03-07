@@ -46,6 +46,10 @@ class Session:
                 retries = 0
                 encountered_401 = False
                 while res.status_code in self.retry_statuses and retries < self.retries:
+
+                    if res.status_code == 500 and self.retry_timer >= 8:
+                        self._expired_login()
+
                     if res.status_code in self.retry_delay_statuses:
                         self.logger.warning(f'FAILED {res.status_code} - {time_completed} seconds')
                         
@@ -131,6 +135,8 @@ class Session:
 
         refresh_func = getattr(self, "_api_refresh", None)
         time_completed = 0
+
+        #FIXME API REFRESH NOT WORKING DUE TO EXTEND TOKEN ENDPOINT CHANGES
         if not callable(refresh_func):
             return self._api_login_wrapper()
         else:
